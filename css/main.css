@@ -1,0 +1,34 @@
+canvas {
+  display: block;
+  position: absolute;
+}
+
+#drawing-container {
+	height: 100vh;
+}
+
+#controls {
+	padding: 20px 0;
+}
+
+#tools {
+	display: flex;
+	flex-wrap: wrap;
+	max-height: 80vh;
+	overflow: auto;
+}
+
+#tools > div {
+	display: block;
+	background-image: url('../textures/01_130x66_130x230.png');
+	background-repeat: no-repeat;
+	background-size: auto;
+	width: 130px;
+	height: 230px;
+	border: 2px dashed transparent;
+	box-sizing: border-box;
+}
+
+#tools > div.selected {
+	border-color: #b05355;
+}
