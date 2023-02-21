@@ -246,13 +246,11 @@ function onScroll(e) {
 	// TODO: implement correctly!
 	e.preventDefault();
 
-	const delta = 0.005;
+	const delta = 0.006;
 
 	if (e.deltaY < 0) scale -= delta;
 	else if (e.deltaY > 0) scale += delta;
 	
-	console.log(scale);
-
 	if (scale > 1.3) scale = 1.3;
 	if (scale < 0.5) scale = 0.5;
 }
