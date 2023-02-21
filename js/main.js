@@ -6,7 +6,9 @@ const $ = _ => document.querySelector(_)
 const $c = _ => document.createElement(_)
 
 let drawingContainer, canvas, bg, canvasFg, fg, tool, activeTool, isPlacing;
-let viewCenter, prevScale = 1, scale = 1, isScrolling = false;
+let viewCenter, scale = 1;
+
+let mousePos = [0, 0];
 
 let ntiles, tileWidth, tileHeight, texWidth, texHeight;
 
@@ -97,6 +99,7 @@ function renderTools() {
 
 function tick() {
 	drawMap();
+	drawCursor();
 	world.tick();
 }
 
@@ -105,8 +108,6 @@ function resize() {
 	canvas.height = drawingContainer.offsetHeight;
 	canvasFg.width = canvas.width;
 	canvasFg.height = canvas.height;
-
-	drawMap();
 }
 
 // From https://stackoverflow.com/a/36046727
@@ -155,22 +156,37 @@ function clearCtx(ctx) {
 	ctx.restore();
 }
 
-const drawMap = () =>{
+function drawMap() {
 	clearCtx(bg);
+
+	bg.save();
+	bg.scale(scale, scale);
+
 	for(let i = 0; i < ntiles; i++){
 		for(let j = 0; j < ntiles; j++){
 			drawImageTile(bg, i, j, world.map[i][j].texture.y, world.map[i][j].texture.x);
 		}
 	}
-	if (prevScale != scale) {
-		prevScale = scale;
-		bg.scale(scale, scale);
+
+	bg.restore();
+}
+
+function drawCursor() {
+	clearCtx(fg);
+
+	let color = 'rgba(0,0,0,0.2)';
+	if (mode === 'DETAILS') {
+		color = 'rgba(11,127,171,0.3)';
 	}
-	scale = 1;
+
+	if (mousePos.x >= 0 && mousePos.x < ntiles && mousePos.y >= 0 && mousePos.y < ntiles) {
+		drawTile(fg, mousePos.x, mousePos.y, color);
+	}
 }
 
 const drawTile = (c,x,y,color) => {
 	c.save()
+	c.scale(scale, scale);
 	c.translate((y-x) * tileWidth/2 - viewCenter.x,(x+y)*tileHeight/2 - viewCenter.y)
 	c.beginPath()
 	c.moveTo(0,0)
@@ -193,27 +209,19 @@ const drawImageTile = (c,x,y,i,j) => {
 }
 
 const getTilePosition = e => {
-	const _y = (e.offsetY + viewCenter.y) / tileHeight;
-	const _x = (e.offsetX + viewCenter.x) / tileWidth;
+	const __x = e.offsetX / scale;
+	const __y = e.offsetY / scale;
+	const _y = (__y + viewCenter.y) / tileHeight;
+	const _x = (__x + viewCenter.x) / tileWidth;
 	const x = Math.floor(_y-_x);
 	const y = Math.floor(_x+_y);
-	return {x: x, y: y};
+	return {x, y};
 }
 
 function onHover(e) {
 	// if (isPlacing) onClick(e)
-	const pos = getTilePosition(e)
+	mousePos = getTilePosition(e)
 	// console.log(pos);
-	clearCtx(fg)
-
-	let color = 'rgba(0,0,0,0.2)';
-	if (mode === 'DETAILS') {
-		color = 'rgba(11, 127, 171,0.3)';
-	}
-
-	if(pos.x >= 0 && pos.x < ntiles && pos.y >= 0 && pos.y < ntiles) {
-		drawTile(fg,pos.x,pos.y,color);
-	}
 }
 
 function onKeyPress(event) {
@@ -236,20 +244,17 @@ function onKeyPress(event) {
 
 function onScroll(e) {
 	// TODO: implement correctly!
-	// e.preventDefault();
+	e.preventDefault();
+
+	const delta = 0.005;
+
+	if (e.deltaY < 0) scale -= delta;
+	else if (e.deltaY > 0) scale += delta;
 	
-	// let prev = scale;
+	console.log(scale);
 
-	// if (e.deltaY < 0) scale -= 0.01;
-	// else if (e.deltaY > 0) scale += 0.01;
-
-	// if (scale != prev && !isScrolling) {
-	// 	setTimeout(() => {
-	// 		drawMap();
-	// 		isScrolling = false;
-	// 	}, 1);
-	// 	isScrolling = true;
-	// }
+	if (scale > 1.3) scale = 1.3;
+	if (scale < 0.5) scale = 0.5;
 }
 
 const onClick = e => {
