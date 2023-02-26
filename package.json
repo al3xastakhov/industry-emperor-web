@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "build": "webpack",
+    "build": "webpack --watch",
     "start": "webpack serve --mode development"
   },
   "devDependencies": {

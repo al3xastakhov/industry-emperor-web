@@ -27,7 +27,7 @@ const init = () => {
 	tool = [0,0]
 
 	let map = []; // [0,0]
-	const k = 10;
+	const k = 20;
 
 	console.log(`Starting with k=${k}`);
 
