@@ -1,5 +1,5 @@
-import { World, Cell, CellType, cellTypeFromNumber } from "./game.js"; 
-import { UI } from "./ui.js";
+import { World, Cell, CellType, cellTypeFromNumber } from "./game";
+import { UI } from "./ui";
 
 const $ = _ => document.querySelector(_)
 
@@ -19,7 +19,7 @@ let mode = 'BUILD'; // UI state
 
 /* texture from https://opengameart.org/content/isometric-landscape */
 const texture = new Image()
-texture.src = "textures/01_130x66_130x230.png"
+texture.src = "textures/bg.png"
 texture.onload = _ => init()
 
 const init = () => {
@@ -27,7 +27,10 @@ const init = () => {
 	tool = [0,0]
 
 	let map = []; // [0,0]
-	const k = 20;
+	const k = 10;
+
+	console.log(`Starting with k=${k}`);
+
 	for (let i = 0; i < k; i++) {
 		let cur = [];
 		for (let j = 0; j < k; j++) {
@@ -178,8 +181,9 @@ function drawCursor() {
 	if (mode === 'DETAILS') {
 		color = 'rgba(11,127,171,0.3)';
 	}
-
+// @ts-ignore
 	if (mousePos.x >= 0 && mousePos.x < ntiles && mousePos.y >= 0 && mousePos.y < ntiles) {
+		// @ts-ignore
 		drawTile(fg, mousePos.x, mousePos.y, color);
 	}
 }
@@ -220,6 +224,7 @@ const getTilePosition = e => {
 
 function onHover(e) {
 	// if (isPlacing) onClick(e)
+	// @ts-ignore
 	mousePos = getTilePosition(e)
 	// console.log(pos);
 }
@@ -272,6 +277,7 @@ const onClick = e => {
 		for (const c of cells) {
 			drawTile(fg,c.pos.x,c.pos.y,'rgba(11, 127, 171,0.2)');
 		}
+		// @ts-ignore
 		ui.infoTab.showCellInfo(cell, `Cells around=[${cells.map(c => c.type.description).join(", ")}]`);
 		return;
 	}
@@ -305,4 +311,5 @@ function activateTab(e) {
 }
 
 // exports to dumb HTML
+// @ts-ignore
 window.activateTab = activateTab;

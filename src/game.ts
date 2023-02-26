@@ -43,6 +43,7 @@ class World {
     }
 
     constructor(map) {
+        // @ts-ignore
         this.map = map;
     }
 
@@ -56,6 +57,7 @@ class World {
      */
     getCell(pos) {
         if (!this.isValid(pos)) throw new Error(`Position not valid: ${pos}`);
+        // @ts-ignore
         return this.map[pos.x][pos.y];
     }
 
@@ -63,11 +65,14 @@ class World {
      * @param {Cell} cell 
      */
     setCell(cell) {
+        // @ts-ignore
         this.map[cell.pos.x][cell.pos.y] = cell;
     }
 
     isValid(pos) {
+        // @ts-ignore
         return pos.x >= 0 && pos.x < this.map.length
+            // @ts-ignore
             && pos.y >= 0 && pos.y < this.map[0].length;
     }
 
@@ -124,8 +129,11 @@ class Cell {
      * @param {CellType} type 
      */
     constructor(texture, pos, type) {
+        // @ts-ignore
         this.texture = texture;
+        // @ts-ignore
         this.pos = pos;
+        // @ts-ignore
         this.type = type;
     }
 

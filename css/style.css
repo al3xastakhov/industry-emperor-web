@@ -3,6 +3,10 @@ canvas {
   position: absolute;
 }
 
+.container-fluid {
+	height: 100vh;
+}
+
 #drawing-container {
 	height: 100vh;
 }
@@ -20,7 +24,7 @@ canvas {
 
 #tools > div {
 	display: block;
-	background-image: url('../textures/01_130x66_130x230.png');
+	background-image: url('../textures/bg.png');
 	background-repeat: no-repeat;
 	background-size: auto;
 	width: 130px;

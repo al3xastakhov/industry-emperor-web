@@ -1,8 +1,9 @@
-import { Cell } from "./game.js";
+import { Cell } from "./game";
 
 class UI {
 
     constructor() {
+        // @ts-ignore
         this.infoTab = new InfoTab();
     }
 
@@ -14,6 +15,7 @@ class InfoTab {
     static noContent = "<p>Pick cell to inspect</p>";
     
     constructor() {
+        // @ts-ignore
         this.el = $(InfoTab.selector)[0];
     }
 
@@ -21,6 +23,7 @@ class InfoTab {
      * @param {Cell} cell 
      */
     showCellInfo(cell, info) {
+        // @ts-ignore
         this.el.innerHTML = `
             <table class="table table-sm">
                 <tr>
