@@ -1,4 +1,4 @@
-import { World, Cell, CellType, cellTypeFromNumber } from "./game";
+import { World, Cell, CellType, cellTypeFromNumber, Pos } from "./game";
 import { UI } from "./ui";
 
 const $ = _ => document.querySelector(_)
@@ -12,7 +12,9 @@ let mousePos = [0, 0];
 
 let ntiles, tileWidth, tileHeight, texWidth, texHeight;
 
-let world;
+let frameCount = 0;
+
+let world: World;
 let ui = new UI();
 
 let mode = 'BUILD'; // UI state
@@ -72,7 +74,11 @@ const init = () => {
 	canvasFg.addEventListener("wheel", onScroll);
 	addEventListener("keydown", onKeyPress);
 
-	setInterval(tick, 1000 / 30);
+	setInterval(tick, 1000 / 300);
+	setInterval(() => {
+		ui.fps.update(frameCount);
+		frameCount = 0;
+	}, 1000);
 
 	renderTools();
 }
@@ -104,6 +110,7 @@ function tick() {
 	drawMap();
 	drawCursor();
 	world.tick();
+	frameCount += 1;
 }
 
 function resize() {
@@ -167,7 +174,8 @@ function drawMap() {
 
 	for(let i = 0; i < ntiles; i++){
 		for(let j = 0; j < ntiles; j++){
-			drawImageTile(bg, i, j, world.map[i][j].texture.y, world.map[i][j].texture.x);
+			const tile = world.map[i][j];
+			drawImageTile(bg, new Pos(i, j), tile.texture, tile.type == CellType.Factory ? 0.5 : 1);
 		}
 	}
 
@@ -203,13 +211,18 @@ const drawTile = (c,x,y,color) => {
 	c.restore()
 }
 
-const drawImageTile = (c,x,y,i,j) => {
-	c.save()
-	c.translate((y-x) * tileWidth/2 - viewCenter.x,(x+y)*tileHeight/2 - viewCenter.y)
-	j *= 130
-	i *= 230
-	c.drawImage(texture,j,i,130,230,-65,-130,130,230)
-	c.restore()
+const drawImageTile = (c: CanvasRenderingContext2D, mapIdx: Pos, textureIdx: Pos, opacity: number = 1) => {
+	const x = mapIdx.x, y = mapIdx.y;
+	let j = textureIdx.x;
+	let i = textureIdx.y;
+	c.save();
+	c.globalAlpha = opacity;
+	c.translate((y-x) * tileWidth/2 - viewCenter.x,(x+y)*tileHeight/2 - viewCenter.y);
+	j *= 130;
+	i *= 230;
+	c.drawImage(texture,j,i,130,230,-65,-130,130,230);
+	c.globalAlpha = 1;
+	c.restore();
 }
 
 const getTilePosition = e => {
@@ -277,8 +290,7 @@ const onClick = e => {
 		for (const c of cells) {
 			drawTile(fg,c.pos.x,c.pos.y,'rgba(11, 127, 171,0.2)');
 		}
-		// @ts-ignore
-		ui.infoTab.showCellInfo(cell, `Cells around=[${cells.map(c => c.type.description).join(", ")}]`);
+		ui.infoTab.showCellInfo(cell, `Cells around=[${cells.map(c => c.type).join(", ")}]`);
 		return;
 	}
 }

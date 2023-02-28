@@ -1,14 +1,14 @@
-const CellType = Object.freeze({
-    Empty: Symbol("Empty"),
-    ResidentialBuilding: Symbol("ResidentialBuilding"),
-    Road: Symbol("Road"),
-    Factory: Symbol("Factory"),
-    Shop: Symbol("Shop"),
-    Storage: Symbol("Storage"),
-    CityDecor: Symbol("CityDecor"),
-});
+export enum CellType {
+    Empty = "Empty",
+    ResidentialBuilding = "ResidentialBuilding",
+    Road = "Road",
+    Factory = "Factory",
+    Shop = "Shop",
+    Storage = "Storage",
+    CityDecor = "CityDecor",
+};
 
-function cellTypeFromNumber(arr) {
+function cellTypeFromNumber(arr: [number, number]) {
     const num = arr[0] * 12 + arr[1];
     return num == 0 ? CellType.Empty
         : [47, 71].includes(num) ? CellType.Storage
@@ -20,6 +20,8 @@ function cellTypeFromNumber(arr) {
 }
 
 class World {
+
+    public map: Cell[][];
 
     /**
      * @param {[[number, number]]} arr 
@@ -55,7 +57,7 @@ class World {
      * @param {{x: number, y: number}} pos 
      * @returns {Cell}
      */
-    getCell(pos) {
+    getCell(pos): Cell {
         if (!this.isValid(pos)) throw new Error(`Position not valid: ${pos}`);
         // @ts-ignore
         return this.map[pos.x][pos.y];
@@ -122,13 +124,17 @@ class World {
 
 class Cell {
 
+    public texture: Pos;
+    public pos: Pos;
+    public type: CellType;
+
     /**
      * 
      * @param {{x: number, y: number}} texture 
      * @param {{x: number, y: number}} pos 
      * @param {CellType} type 
      */
-    constructor(texture, pos, type) {
+    constructor(texture: Pos, pos: Pos, type: CellType) {
         // @ts-ignore
         this.texture = texture;
         // @ts-ignore
@@ -143,4 +149,13 @@ class Building extends Cell {
 
 }
 
-export { World, Cell, CellType, Building, cellTypeFromNumber };
+export class Pos {
+    public x: number;
+    public y: number;
+
+    constructor(x: number, y: number) {
+        this.x = x;
+        this.y = y;
+    }
+}
+export { World, Cell, Building, cellTypeFromNumber };

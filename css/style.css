@@ -3,6 +3,10 @@ canvas {
   position: absolute;
 }
 
+p.ui {
+	user-select: none;
+}
+
 .container-fluid {
 	height: 100vh;
 }
