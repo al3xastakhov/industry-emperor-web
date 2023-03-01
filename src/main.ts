@@ -131,17 +131,17 @@ function onHover(e) {
 
 function onKeyPress(event: KeyboardEvent) {
 	const delta = 100;
-	switch (event.keyCode) {
-		case 38: // up arrow key
+	switch (event.code) {
+		case "ArrowUp":
 			graphics.camera.move(new Pos(0, -delta));
 			break;
-		case 40: // down arrow key
+		case "ArrowDown":
 			graphics.camera.move(new Pos(0, delta));
 			break;
-		case 37: // left arrow key
+		case "ArrowLeft":
 			graphics.camera.move(new Pos(-delta, 0));
 			break;
-		case 39: // right arrow key
+		case "ArrowRight":
 			graphics.camera.move(new Pos(delta, 0));
 			break;
 	}
