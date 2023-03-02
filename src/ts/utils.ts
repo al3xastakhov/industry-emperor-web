@@ -1,3 +1,15 @@
+export abstract class Pos {
+    public x: number;
+    public y: number;
+
+    constructor(x: number, y: number) {
+        this.x = x;
+        this.y = y;
+    }
+}
+
+export class MousePos extends Pos {}
+
 // TODO: get rid of this !
 
 // From https://stackoverflow.com/a/36046727

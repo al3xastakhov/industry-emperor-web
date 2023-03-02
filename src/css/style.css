@@ -37,6 +37,6 @@ p.ui {
 	box-sizing: border-box;
 }
 
-#tools > div.selected {
+.selected {
 	border-color: #b05355;
 }

@@ -1,17 +1,17 @@
-import { World, Cell, CellType, cellTypeFromNumber, Pos } from "./game";
+import { World, Cell, CellType, cellTypeFromNumber, CellPos } from "./game";
 import { Graphics } from "./graphics";
 import { UI } from "./ui";
-import { loadHashState, updateHashState } from "./utils";
+import { loadHashState, MousePos, updateHashState } from "./utils";
 
 const $ = _ => document.querySelector(_)
 
 const $c = _ => document.createElement(_)
 
-let drawingContainer, canvas: HTMLCanvasElement, bg, tool, activeTool, isPlacing;
+let drawingContainer, canvas: HTMLCanvasElement, tool, activeTool;
 
-let mousePos: Pos = new Pos(0, 0);
+let mouseCellPos: CellPos = new CellPos(0, 0);
 
-let ntiles, tileWidth, tileHeight, texWidth, texHeight;
+let ntiles: number;
 
 let frameCount = 0;
 
@@ -47,16 +47,11 @@ const init = () => {
 
 	window.addEventListener('resize', resize);
 
-	ntiles = map.length
+	ntiles = map.length;
 
-	tileWidth = 128
-	tileHeight = 64
-	texWidth = 12
-	texHeight = 6
+	loadHashState(map, document.location.hash.substring(1), ntiles, Graphics._textureWidth);
 
-	loadHashState(map, document.location.hash.substring(1), ntiles, texWidth);
-
-	graphics = new Graphics(canvas, texture, tileWidth, tileHeight);
+	graphics = new Graphics(canvas, texture);
 	world = World.fromTextureArray(map);
 
 	resize();
@@ -81,8 +76,8 @@ function renderTools() {
 	let tools = $('#tools');
 
 	let toolCount = 0;
-	for (let i = 0; i < texHeight; i++) {
-		for (let j = 0; j < texWidth; j++) {
+	for (let i = 0; i < Graphics._textureHeight; i++) {
+		for (let j = 0; j < Graphics._textureWidth; j++) {
 			const div = $c('div');
 			div.id = `tool_${toolCount++}`;
 			div.style.display = "block";
@@ -101,9 +96,9 @@ function renderTools() {
 }
 
 function tick() {
+	world.tick();
 	graphics.drawMap(world.map);
 	drawCursor();
-	world.tick();
 	frameCount += 1;
 }
 
@@ -118,31 +113,30 @@ function drawCursor() {
 	if (mode === 'DETAILS') {
 		color = 'rgba(11,127,171,0.3)';
 	}
-	if (mousePos.x >= 0 && mousePos.x < ntiles && mousePos.y >= 0 && mousePos.y < ntiles) {
-		graphics.highlightTile(mousePos, color, 0.5);
-		// highlightTile(bg, mousePos.x, mousePos.y, color, 0.5);
+	if (mouseCellPos.x >= 0 && mouseCellPos.x < ntiles && mouseCellPos.y >= 0 && mouseCellPos.y < ntiles) {
+		graphics.highlightTile(mouseCellPos, color, 0.5);
 	}
 }
 
 function onHover(e) {
 	// TODO: set mouse coords in the world state instead
-	mousePos = graphics.getTilePosition(new Pos(e.offsetX, e.offsetY));
+	mouseCellPos = graphics.getTilePosition(new MousePos(e.offsetX, e.offsetY));
 }
 
 function onKeyPress(event: KeyboardEvent) {
 	const delta = 100;
 	switch (event.code) {
 		case "ArrowUp":
-			graphics.camera.move(new Pos(0, -delta));
+			graphics.camera.move({x: 0, y: -delta});
 			break;
 		case "ArrowDown":
-			graphics.camera.move(new Pos(0, delta));
+			graphics.camera.move({x: 0, y: delta});
 			break;
 		case "ArrowLeft":
-			graphics.camera.move(new Pos(-delta, 0));
+			graphics.camera.move({x: -delta, y: 0});
 			break;
 		case "ArrowRight":
-			graphics.camera.move(new Pos(delta, 0));
+			graphics.camera.move({x: delta, y: 0});
 			break;
 	}
 }
@@ -156,18 +150,16 @@ function onScroll(e) {
 
 // TODO: refactor to stop using graphics directly
 function onClick(_: MouseEvent) {
-	const pos = mousePos; // TODO: is it ok to just use hover-based value?
-	if (!(pos.x >= 0 && pos.x < ntiles && pos.y >= 0 && pos.y < ntiles)) return;
+	if (!(mouseCellPos.x >= 0 && mouseCellPos.x < ntiles && mouseCellPos.y >= 0 && mouseCellPos.y < ntiles)) return;
 
 	if (mode === 'BUILD') {
-		world.setCell(new Cell({ x: tool[1], y: tool[0] }, pos, cellTypeFromNumber(tool)));
-		isPlacing = true
-		updateHashState(world, ntiles, texWidth);
+		world.setCell(new Cell({ x: tool[1], y: tool[0] }, mouseCellPos, cellTypeFromNumber(tool), {}));
+		updateHashState(world, ntiles, Graphics._textureWidth);
 		return;
 	}
 
 	if (mode === 'DETAILS') {
-		const cell = world.getCell(pos);
+		const cell = world.getCell(mouseCellPos);
 		const cells = world.getSurroundingCells(cell, 2, new Set());
 		for (const c of cells) {
 			graphics.highlightTile(c.pos, 'rgba(11, 127, 171,0.2)');
@@ -178,7 +170,6 @@ function onClick(_: MouseEvent) {
 }
 
 const unclick = () => {
-	isPlacing = false;
 }
 
 function activateTab(e) {

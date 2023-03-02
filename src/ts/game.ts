@@ -1,3 +1,5 @@
+import { MousePos, Pos } from "./utils";
+
 export enum CellType {
     Empty = "Empty",
     ResidentialBuilding = "ResidentialBuilding",
@@ -7,6 +9,8 @@ export enum CellType {
     Storage = "Storage",
     CityDecor = "CityDecor",
 };
+
+export class CellPos extends Pos {}
 
 function cellTypeFromNumber(arr: [number, number]) {
     const num = arr[0] * 12 + arr[1];
@@ -35,7 +39,8 @@ class World {
                 cur.push(new Cell(
                     { x: arr[i][j][1], y: arr[i][j][0] },
                     { x: i, y: j },
-                    cellTypeFromNumber(arr[i][j])
+                    cellTypeFromNumber(arr[i][j]),
+                    {}
                 ));
             }
             newArr.push(cur);
@@ -53,25 +58,18 @@ class World {
         // no-op for now
     }
 
-    /**
-     * @param {{x: number, y: number}} pos 
-     * @returns {Cell}
-     */
-    getCell(pos): Cell {
+    getCell(pos: MousePos): Cell {
         if (!this.isValid(pos)) throw new Error(`Position not valid: ${pos}`);
         // @ts-ignore
         return this.map[pos.x][pos.y];
     }
 
-    /**
-     * @param {Cell} cell 
-     */
-    setCell(cell) {
+    setCell(cell: Cell) {
         // @ts-ignore
         this.map[cell.pos.x][cell.pos.y] = cell;
     }
 
-    isValid(pos) {
+    isValid(pos: Pos) {
         // @ts-ignore
         return pos.x >= 0 && pos.x < this.map.length
             // @ts-ignore
@@ -79,12 +77,9 @@ class World {
     }
 
     /**
-     * @param {Cell} cell 
-     * @param {number} range 
-     * @param {CellTypes} cellTypes
-     * @returns 
+     * BFSing around
      */
-    getSurroundingCells(cell, range, cellTypes) {
+    getSurroundingCells(cell: Cell, range: number, cellTypes: Set<CellType>) {
         range = range == -1 ? Number.MAX_VALUE : range;
 
         let result = [];
@@ -122,40 +117,28 @@ class World {
 
 }
 
+class ViewOptions {
+    public highlight?: {
+      color: string,
+      opacity: number // 0..1
+    };
+}
+
 class Cell {
 
     public texture: Pos;
-    public pos: Pos;
+    public pos: CellPos;
     public type: CellType;
-
-    /**
-     * 
-     * @param {{x: number, y: number}} texture 
-     * @param {{x: number, y: number}} pos 
-     * @param {CellType} type 
-     */
-    constructor(texture: Pos, pos: Pos, type: CellType) {
-        // @ts-ignore
+    public viewOptions: ViewOptions;
+    
+    constructor(texture: Pos, pos: CellPos, type: CellType, viewOptions: ViewOptions) {
         this.texture = texture;
-        // @ts-ignore
         this.pos = pos;
-        // @ts-ignore
         this.type = type;
-    }
-
-}
-
-class Building extends Cell {
-
-}
-
-export class Pos {
-    public x: number;
-    public y: number;
-
-    constructor(x: number, y: number) {
-        this.x = x;
-        this.y = y;
+        this.viewOptions = viewOptions;
     }
 }
+
+class Building extends Cell {}
+
 export { World, Cell, Building, cellTypeFromNumber };

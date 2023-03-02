@@ -1,4 +1,5 @@
-import { Cell, CellType, Pos } from "./game";
+import { Cell, CellPos, CellType } from "./game";
+import { MousePos, Pos } from "./utils";
 
 export class Camera {
     static readonly scaleDelta = 0.006;
@@ -27,6 +28,11 @@ export class Camera {
 }
 
 export class Graphics {
+    static readonly	_tileWidth = 128;
+	static readonly	_tileHeight = 64;
+	static readonly	_textureWidth = 12;
+	static readonly	_textureHeight = 6;
+
     public texture: HTMLImageElement;
     public tileWidth: number;
     public tileHeight: number;
@@ -36,13 +42,13 @@ export class Graphics {
 
     public camera: Camera;
 
-    constructor(canvas: HTMLCanvasElement, texture: HTMLImageElement, tileWidth: number, tileHeight: number) {
+    constructor(canvas: HTMLCanvasElement, texture: HTMLImageElement) {
         this.canvas = canvas;
         this.ctx = this.canvas.getContext("2d");
 
         this.texture = texture;
-        this.tileWidth = tileWidth;
-        this.tileHeight = tileHeight;
+        this.tileWidth = Graphics._tileWidth;
+        this.tileHeight = Graphics._tileHeight;
 
         this.camera = new Camera();
     }
@@ -64,7 +70,7 @@ export class Graphics {
         for (let i = 0; i < map.length; i++) {
             for (let j = 0; j < map[0].length; j++) {
                 const tile = map[i][j];
-                this.drawImageTile(new Pos(i, j), tile.texture, tile.type == CellType.Factory ? 0.5 : 1);
+                this.drawImageTile(new CellPos(i, j), tile.texture, tile.type == CellType.Factory ? 0.5 : 1);
             }
         }
 
@@ -83,8 +89,8 @@ export class Graphics {
         ctx.restore();
     }
 
-    public drawImageTile(mapIdx: Pos, textureIdx: Pos, opacity: number = 1) {
-        const x = mapIdx.x, y = mapIdx.y;
+    public drawImageTile(cellPos: CellPos, textureIdx: Pos, opacity: number = 1) {
+        const x = cellPos.x, y = cellPos.y;
         let j = textureIdx.x;
         let i = textureIdx.y;
         this.ctx.save();
@@ -98,7 +104,7 @@ export class Graphics {
         this.ctx.restore();
     }
 
-    public highlightTile(pos: Pos, color, opacity = 1) {
+    public highlightTile(pos: CellPos, color: string, opacity = 1) {
         this.ctx.save();
         this.ctx.scale(this.scale, this.scale);
         this.ctx.translate((pos.y - pos.x) * this.tileWidth / 2 - this.viewCenter.x, (pos.x + pos.y) * this.tileHeight / 2 - this.viewCenter.y);
@@ -115,7 +121,7 @@ export class Graphics {
         this.ctx.restore();
     }
 
-    public getTilePosition(e: Pos) {
+    public getTilePosition(e: MousePos): CellPos {
         const __x = e.x / this.scale;
         const __y = e.y / this.scale;
         const _y = (__y + this.viewCenter.y) / this.tileHeight;
