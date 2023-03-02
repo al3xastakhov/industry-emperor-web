@@ -5,7 +5,7 @@ const CopyPlugin = require("copy-webpack-plugin");
 
 module.exports = {
     mode: "development",
-    entry: './src/index.ts',
+    entry: './src/ts/index.ts',
     module: {
         rules: [
             {
@@ -33,7 +33,7 @@ module.exports = {
     },
     plugins: [
         new HtmlWebpackPlugin({
-            template: './index.html',
+            template: './src/index.html',
             filename: './index.html'
         }),
         new CopyPlugin({
@@ -47,7 +47,7 @@ module.exports = {
                     to: "./",
                 },
                 {
-                    from: "./css/style.css",
+                    from: "./src/css/style.css",
                     to: "./css/",
                 }
             ],
