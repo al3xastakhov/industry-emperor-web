@@ -20,7 +20,7 @@ let world: World;
 let ui: UI;
 let graphics: Graphics;
 let gameController: GameController;
-let inputController: InputController = new InputController();
+let inputController: InputController;
 let game: Game;
 
 /* texture from https://opengameart.org/content/isometric-landscape */
@@ -52,6 +52,7 @@ const init = () => {
 	graphics = new Graphics(canvas, texture);
 	world = World.fromTextureArray(map);
 	game = new Game(world);
+	inputController = new InputController();
 	gameController = new GameController(graphics, inputController);
 
 	resize();
