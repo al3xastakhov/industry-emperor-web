@@ -1,5 +1,5 @@
-import { Cell, CellPos, CellType } from "./game";
 import { MousePos, Pos } from "./utils";
+import { Cell, CellPos, CellType, WorldState } from "./world";
 
 export class Camera {
     static readonly scaleDelta = 0.006;
@@ -61,17 +61,32 @@ export class Graphics {
         return this.camera.viewCenter;
     }
 
-    public drawMap(map: Cell[][]) {
+    public tick(state: WorldState) {
+        this.draw(state.cells);
+    }
+
+    private draw(map: Cell[][]) {
         this.clearCtx(this.ctx);
 
         this.ctx.save();
         this.ctx.scale(this.scale, this.scale);
 
+        const tilesToHighlight = [];
+
         for (let i = 0; i < map.length; i++) {
             for (let j = 0; j < map[0].length; j++) {
                 const tile = map[i][j];
-                this.drawImageTile(new CellPos(i, j), tile.texture, tile.type == CellType.Factory ? 0.5 : 1);
+                this.drawImageTile(tile.pos, tile.texture, tile.type == CellType.Factory ? 0.5 : 1);
+                if (tile.viewOptions.highlight) {
+                    tilesToHighlight.push(tile);
+                }
             }
+        }
+
+        // drawing on top of base layer
+        for (let tile of tilesToHighlight) {
+            const opt = tile.viewOptions.highlight;
+            this.highlightTile(tile.pos, opt.color, opt.opacity);
         }
 
         this.ctx.restore();
@@ -98,6 +113,7 @@ export class Graphics {
         this.ctx.translate((y - x) * this.tileWidth / 2 - this.viewCenter.x, (x + y) * this.tileHeight / 2 - this.viewCenter.y);
         j *= 130;
         i *= 230;
+        // TODO: wtf are these numbers ._.
         // TODO: get rid of direct texture ref here
         this.ctx.drawImage(this.texture, j, i, 130, 230, -65, -130, 130, 230);
         this.ctx.globalAlpha = 1;
@@ -105,9 +121,9 @@ export class Graphics {
     }
 
     public highlightTile(pos: CellPos, color: string, opacity = 1) {
+        const x = pos.x, y = pos.y;
         this.ctx.save();
-        this.ctx.scale(this.scale, this.scale);
-        this.ctx.translate((pos.y - pos.x) * this.tileWidth / 2 - this.viewCenter.x, (pos.x + pos.y) * this.tileHeight / 2 - this.viewCenter.y);
+        this.ctx.translate((y - x) * this.tileWidth / 2 - this.viewCenter.x, (x + y) * this.tileHeight / 2 - this.viewCenter.y);
         this.ctx.beginPath();
         this.ctx.moveTo(0, 0);
         this.ctx.globalAlpha = opacity;
@@ -115,9 +131,10 @@ export class Graphics {
         this.ctx.lineTo(0, this.tileHeight);
         this.ctx.lineTo(-this.tileWidth / 2, this.tileHeight / 2);
         this.ctx.closePath();
+        this.ctx.scale(this.scale, this.scale);
         this.ctx.fillStyle = color;
-        this.ctx.globalAlpha = 1;
         this.ctx.fill();
+        this.ctx.globalAlpha = 1;
         this.ctx.restore();
     }
 

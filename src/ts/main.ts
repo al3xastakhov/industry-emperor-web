@@ -1,24 +1,27 @@
-import { World, Cell, CellType, cellTypeFromNumber, CellPos } from "./game";
+import { Game } from "./game";
+import { GameController, GameMode } from "./game_controller";
 import { Graphics } from "./graphics";
+import { InputController } from "./input";
 import { UI } from "./ui";
-import { loadHashState, MousePos, updateHashState } from "./utils";
+import { loadHashState, MousePos } from "./utils";
+import { World } from "./world";
 
 const $ = _ => document.querySelector(_)
 
 const $c = _ => document.createElement(_)
 
-let drawingContainer, canvas: HTMLCanvasElement, tool, activeTool;
-
-let mouseCellPos: CellPos = new CellPos(0, 0);
+let drawingContainer, canvas: HTMLCanvasElement;
 
 let ntiles: number;
 
 let frameCount = 0;
 
 let world: World;
-let ui = new UI();
+let ui: UI;
 let graphics: Graphics;
-let mode = 'BUILD'; // UI state
+let gameController: GameController;
+let inputController: InputController = new InputController();
+let game: Game;
 
 /* texture from https://opengameart.org/content/isometric-landscape */
 const texture = new Image()
@@ -27,13 +30,10 @@ texture.onload = _ => init()
 
 const init = () => {
 
-	tool = [0, 0]
-
 	let map = []; // [0,0]
 	const k = 20;
 
 	console.log(`Starting with k=${k}`);
-
 	for (let i = 0; i < k; i++) {
 		let cur = [];
 		for (let j = 0; j < k; j++) {
@@ -41,25 +41,27 @@ const init = () => {
 		}
 		map.push(cur);
 	}
+	ntiles = map.length;
+	loadHashState(map, document.location.hash.substring(1), ntiles, Graphics._textureWidth);
 
 	drawingContainer = $("#drawing-container");
 	canvas = $("#bg");
-
 	window.addEventListener('resize', resize);
 
-	ntiles = map.length;
-
-	loadHashState(map, document.location.hash.substring(1), ntiles, Graphics._textureWidth);
-
+	ui = new UI();
 	graphics = new Graphics(canvas, texture);
 	world = World.fromTextureArray(map);
+	game = new Game(world);
+	gameController = new GameController(graphics, inputController);
 
 	resize();
 
-	canvas.addEventListener('mousemove', onHover)
-	canvas.addEventListener('contextmenu', e => e.preventDefault())
-	canvas.addEventListener('mouseup', unclick)
-	canvas.addEventListener('mousedown', onClick)
+	canvas.addEventListener('contextmenu', e => inputController.onMouseDown(e))
+	// canvas.addEventListener('mousemove', onHover);
+	canvas.addEventListener('mousemove', e => inputController.onMouseMove(e));
+	// canvas.addEventListener('mouseup', e => inputController.onMouseUp(e));
+	canvas.addEventListener('mousedown', e => inputController.onMouseDown(e));
+	// TODO:
 	canvas.addEventListener("wheel", onScroll);
 	addEventListener("keydown", onKeyPress);
 
@@ -84,11 +86,10 @@ function renderTools() {
 			/* width of 132 instead of 130  = 130 image + 2 border = 132 */
 			div.style.backgroundPosition = `-${j * 130 + 2}px -${i * 230}px`;
 			div.addEventListener('click', e => {
-				tool = [i, j];
-				if (activeTool)
-					$(`#${activeTool}`).classList.remove('selected');
-				activeTool = e.target.id;
-				$(`#${activeTool}`).classList.add('selected');
+				gameController.setGameMode(GameMode.BUILD);
+				gameController.setGameModeData({
+					tool: [i, j],
+				});
 			});
 			tools.appendChild(div);
 		}
@@ -96,31 +97,22 @@ function renderTools() {
 }
 
 function tick() {
-	world.tick();
-	graphics.drawMap(world.map);
-	drawCursor();
+	const gameInput = gameController.tick();
+	const output = game.tick(gameInput);
+	gameController.setGameMode(output.mode);
+	gameController.setWorldState(output.newWorldState);
+
+	// TODO: consider having separate "thread" for graphics
+	graphics.tick(output.newWorldState);
+	
+	output.uiChanges.forEach(c => ui.execute(c));
+
 	frameCount += 1;
 }
 
 function resize() {
 	canvas.width = drawingContainer.offsetWidth;
 	canvas.height = drawingContainer.offsetHeight;
-}
-
-// TODO: move to graphics, once establish world state
-function drawCursor() {
-	let color = 'rgba(0,0,0,0.2)';
-	if (mode === 'DETAILS') {
-		color = 'rgba(11,127,171,0.3)';
-	}
-	if (mouseCellPos.x >= 0 && mouseCellPos.x < ntiles && mouseCellPos.y >= 0 && mouseCellPos.y < ntiles) {
-		graphics.highlightTile(mouseCellPos, color, 0.5);
-	}
-}
-
-function onHover(e) {
-	// TODO: set mouse coords in the world state instead
-	mouseCellPos = graphics.getTilePosition(new MousePos(e.offsetX, e.offsetY));
 }
 
 function onKeyPress(event: KeyboardEvent) {
@@ -148,30 +140,6 @@ function onScroll(e) {
 	else if (e.deltaY > 0) graphics.camera.zoomIn();
 }
 
-// TODO: refactor to stop using graphics directly
-function onClick(_: MouseEvent) {
-	if (!(mouseCellPos.x >= 0 && mouseCellPos.x < ntiles && mouseCellPos.y >= 0 && mouseCellPos.y < ntiles)) return;
-
-	if (mode === 'BUILD') {
-		world.setCell(new Cell({ x: tool[1], y: tool[0] }, mouseCellPos, cellTypeFromNumber(tool), {}));
-		updateHashState(world, ntiles, Graphics._textureWidth);
-		return;
-	}
-
-	if (mode === 'DETAILS') {
-		const cell = world.getCell(mouseCellPos);
-		const cells = world.getSurroundingCells(cell, 2, new Set());
-		for (const c of cells) {
-			graphics.highlightTile(c.pos, 'rgba(11, 127, 171,0.2)');
-		}
-		ui.infoTab.showCellInfo(cell, `Cells around=[${cells.map(c => c.type).join(", ")}]`);
-		return;
-	}
-}
-
-const unclick = () => {
-}
-
 function activateTab(e) {
 	const selector = e.getAttribute("data-tab");
 	for (const child of $("#instruments").children) {
@@ -187,10 +155,10 @@ function activateTab(e) {
 
 	switch (selector) {
 		case "#tools":
-			mode = "BUILD";
+			gameController.setGameMode(GameMode.BUILD);
 			break;
 		case "#details":
-			mode = "DETAILS";
+			gameController.setGameMode(GameMode.INSPECT);
 			break;
 	}
 }
