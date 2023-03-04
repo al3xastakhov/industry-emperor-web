@@ -10,15 +10,13 @@ const $ = _ => document.querySelector(_)
 
 const $c = _ => document.createElement(_)
 
-let drawingContainer, canvas: HTMLCanvasElement;
+let drawingContainer: HTMLElement, canvas: HTMLCanvasElement;
 
 let frameCount = 0;
 
-let world: World;
 let ui: UI;
 let graphics: Graphics;
 let gameController: GameController;
-let inputController: InputController;
 let game: Game;
 
 /* texture from https://opengameart.org/content/isometric-landscape */
@@ -30,22 +28,22 @@ const init = () => {
 
 	const size = 20;
 	let map = loadMap(size);
+	let world = World.fromTextureArray(map);
+	game = new Game(world);
 
 	drawingContainer = $("#drawing-container");
 	canvas = $("#bg");
-	window.addEventListener('resize', onResize);
 
 	ui = new UI();
 	graphics = new Graphics(canvas, texture);
-	world = World.fromTextureArray(map);
-	game = new Game(world);
-	inputController = new InputController();
+	let inputController = new InputController();
 	gameController = new GameController(graphics, inputController);
 
 	onResize();
 
 	// Input bindings
-	canvas.addEventListener('contextmenu', e => inputController.onMouseDown(e))
+	window.addEventListener('resize', onResize);
+	canvas.addEventListener('contextmenu', e => inputController.onMouseDown(e));
 	canvas.addEventListener('mousemove', e => inputController.onMouseMove(e));
 	canvas.addEventListener('mousedown', e => inputController.onMouseDown(e));
 	// not needed for now
@@ -54,6 +52,7 @@ const init = () => {
 	window.addEventListener('keydown', e => inputController.onKeyDown(e));
 	window.addEventListener('keyup', e => inputController.onKeyUp(e));
 
+	// TODO: change timers to request-animation-frame
 	// Game loop
 	setInterval(tick, 1000 / 300);
 	setInterval(() => {
@@ -100,7 +99,7 @@ function onResize() {
 	canvas.height = drawingContainer.offsetHeight;
 }
 
-function activateTab(e) {
+function activateTab(e: HTMLElement) {
 	const selector = e.getAttribute("data-tab");
 	for (const child of $("#instruments").children) {
 		child.style.display = "none";
