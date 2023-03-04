@@ -1,6 +1,7 @@
 import { BuildModeData, GameInput, GameModeType, GameOutput } from "./game_controller";
-import { Pos } from "./utils";
-import { Cell, CellPos, CellType, World, WorldState } from "./world";
+import { Pos } from "./core/utils";
+import { World, WorldState } from "./world";
+import { CellPos, Cell, CellType } from "./core/cell";
 
 export class Game {
 

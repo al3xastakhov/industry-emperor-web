@@ -1,5 +1,6 @@
+import { WorldState } from "../world";
+import { Cell, CellPos, CellType } from "./cell";
 import { MousePos, Pos } from "./utils";
-import { Cell, CellPos, CellType, WorldState } from "./world";
 
 export class Camera {
     static readonly scaleDelta = 0.006;
@@ -28,6 +29,7 @@ export class Camera {
 }
 
 export class Graphics {
+    // TODO: move this out to separate Texture class
     static readonly	_tileWidth = 128;
 	static readonly	_tileHeight = 64;
 	static readonly	_textureWidth = 12;

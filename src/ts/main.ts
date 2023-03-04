@@ -1,9 +1,9 @@
+import { Graphics } from "./core/graphics";
+import { InputController } from "./core/input";
+import { loadHashState } from "./core/utils";
 import { Game } from "./game";
 import { GameController, GameModeType } from "./game_controller";
-import { Graphics } from "./graphics";
-import { InputController } from "./input";
 import { UI } from "./ui";
-import { loadHashState, MousePos } from "./utils";
 import { World } from "./world";
 
 const $ = _ => document.querySelector(_)

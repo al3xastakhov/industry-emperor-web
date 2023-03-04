@@ -1,4 +1,4 @@
-import { Cell } from "./world";
+import { Cell } from "./core/cell";
 
 interface UiCommand {
     component: string

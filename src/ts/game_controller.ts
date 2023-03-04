@@ -1,7 +1,8 @@
-import { Graphics } from "./graphics";
-import { InputController, InputState, MouseButtonEvent } from "./input";
-import { Pos } from "./utils";
-import { CellPos, WorldState } from "./world";
+import { CellPos } from "./core/cell";
+import { Graphics } from "./core/graphics";
+import { InputController, InputState, MouseButtonEvent } from "./core/input";
+import { Pos } from "./core/utils";
+import { WorldState } from "./world";
 
 export enum GameModeType {
     IDLE, BUILD, INSPECT

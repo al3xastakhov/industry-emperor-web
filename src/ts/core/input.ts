@@ -1,5 +1,4 @@
 import { MousePos } from "./utils";
-import { CellPos } from "./world";
 
 export enum MouseButtonEnum {
     UNKNOWN, LEFT, MIDDLE, RIGHT
