@@ -34,8 +34,13 @@ export class Game {
         return output;
     }
 
-    // true, if tick hits in between `mousedown` and `mouseup` events
-    // public readonly clickInProgress: boolean;
+    // TODO: consider this:
+    //   public readonly clickInProgress: boolean;
+    //   ^ true, if tick hits in between `mousedown` and `mouseup` events
+
+    /**
+     * Bind player input (clicks) to game state changes
+     */
     private handlePlayerInput(input: GameInput, output: GameOutput) {
         const cellPos = input.playerInput.cellPos;
         input.playerInput.buttonEvents.filter(e => e.rawEvent.isPress).forEach(e => {

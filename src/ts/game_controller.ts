@@ -23,11 +23,14 @@ export class GameInput {
 export class GameOutput {
     public readonly newWorldState: WorldState;
     public readonly mode: GameModeType;
+
+    // TODO: should be a separate entity / observable ?
     public readonly uiChanges: {
         component: string,
         method: string,
         data: any
     }[];
+    
     constructor(newWorldState: WorldState, mode: GameModeType, uiChanges: any) {
         this.newWorldState = newWorldState
         this.mode = mode
