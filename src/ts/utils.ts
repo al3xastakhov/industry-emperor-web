@@ -9,7 +9,6 @@ export abstract class Pos {
 	}
 }
 
-// TODO: get rid of usages, and from the methods
 export namespace Pos {
 	export function swap(p: Pos): Pos {
 		return {

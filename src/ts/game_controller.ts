@@ -75,6 +75,7 @@ export class GameController {
         this.graphics = graphics;
         this.inputController = inputController;
         this.gameMode = GameModeType.BUILD;
+        this.setGameModeData({tool: {x: 0, y: 0}});
         this.oldWorldState = WorldState.EMPTY;
     }
 

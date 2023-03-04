@@ -102,14 +102,14 @@ function renderTools() {
 
 function tick() {
 	const gameInput = gameController.tick();
-	const output = game.tick(gameInput);
-	gameController.setGameMode(output.mode);
-	gameController.setWorldState(output.newWorldState);
+	const gameOutput = game.tick(gameInput);
+	gameController.setGameMode(gameOutput.mode);
+	gameController.setWorldState(gameOutput.newWorldState);
 
 	// TODO: consider having separate "thread" for graphics
-	graphics.tick(output.newWorldState);
+	graphics.tick(gameOutput.newWorldState);
 	
-	output.uiChanges.forEach(c => ui.execute(c));
+	gameOutput.uiChanges.forEach(c => ui.execute(c));
 
 	frameCount += 1;
 }

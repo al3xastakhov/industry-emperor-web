@@ -1,6 +1,6 @@
 import { BuildModeData, GameInput, GameModeType, GameOutput } from "./game_controller";
 import { Pos } from "./utils";
-import { Cell, CellType, World, WorldState } from "./world";
+import { Cell, CellPos, CellType, World, WorldState } from "./world";
 
 export class Game {
 
@@ -41,60 +41,43 @@ export class Game {
         input.playerInput.buttonEvents.filter(e => e.rawEvent.isPress).forEach(e => {
             switch (input.mode) {
                 case GameModeType.BUILD:
-                    console.log("build!")
-                    const tool = (input.gameModeData as BuildModeData).tool;
-                    this.world.setCell(new Cell(
-                        Pos.swap(tool),
-                        cellPos,
-                        CellType.fromNumber(Pos.toArr(tool))
-                    ));
+                    this.handleClick_Build(input, cellPos);
                     break;
                 case GameModeType.INSPECT:
-                    const cell = this.world.getCell(cellPos);
-                    const cells = this.world.getSurroundingCells(cell, 2, new Set());
-                    cells.forEach(c => {
-                        this.world.highlightedCells.add(c);
-                        c.viewOptions.highlight = {
-                            color: 'rgba(11, 127, 171,0.2)',
-                            opacity: 0.5
-                        };
-                    });
-                    output.uiChanges.push({
-                        component: 'infoTab',
-                        method: 'showCellInfo',
-                        data: {
-                            cell: cell,
-                            info: `Cells around=[${cells.map(c => c.type).join(", ")}]`
-                        }
-                    });
+                    this.handleClick_Inspect(cellPos, output);
                     break;
             }
         });
     }
 
-    // // TODO: refactor to stop using graphics directly
-    // function onClick(_: MouseEvent) {
-    // 	let mouseCellPos = graphics.getTilePosition(input.mousePos);
-    // 	if (!(mouseCellPos.x >= 0 && mouseCellPos.x < ntiles && mouseCellPos.y >= 0 && mouseCellPos.y < ntiles)) return;
+    private handleClick_Build(input: GameInput, cellPos: CellPos) {
+        const tool = (input.gameModeData as BuildModeData).tool;
+        this.world.setCell(new Cell(
+            Pos.swap(tool),
+            cellPos,
+            CellType.fromNumber(Pos.toArr(tool))
+        ));
+    }
 
-    // 	if (mode === 'BUILD') {
-    // 		world.setCell(new Cell({ x: tool[1], y: tool[0] }, mouseCellPos, cellTypeFromNumber(tool), {}));
-    // 		updateHashState(world, ntiles, Graphics._textureWidth);
-    // 		return;
-    // 	}
-
-    // 	if (mode === 'DETAILS') {
-    // 		const cell = world.getCell(mouseCellPos);
-    // 		const cells = world.getSurroundingCells(cell, 2, new Set());
-    // 		for (const c of cells) {
-    // 			graphics.highlightTile(c.pos, 'rgba(11, 127, 171,0.2)');
-    // 		}
-    // 		ui.infoTab.showCellInfo(cell, `Cells around=[${cells.map(c => c.type).join(", ")}]`);
-    // 		return;
-    // 	}
-    // }
-
-
+    private handleClick_Inspect(cellPos: CellPos, output: GameOutput) {
+        const cell = this.world.getCell(cellPos);
+        const cells = this.world.getSurroundingCells(cell, 2, new Set());
+        cells.forEach(c => {
+            this.world.highlightedCells.add(c);
+            c.viewOptions.highlight = {
+                color: 'rgba(11, 127, 171,0.2)',
+                opacity: 0.5
+            };
+        });
+        output.uiChanges.push({
+            component: 'infoTab',
+            method: 'showCellInfo',
+            data: {
+                cell: cell,
+                info: `Cells around=[${cells.map(c => c.type).join(", ")}]`
+            }
+        });
+    }
 }
 
 
