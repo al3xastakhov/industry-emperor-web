@@ -4,6 +4,10 @@ export enum MouseButtonEnum {
     UNKNOWN, LEFT, MIDDLE, RIGHT
 }
 
+export enum Direction {
+    UP, DOWN, LEFT, RIGHT
+}
+
 export namespace MouseButtonEnum {
     export function fromNumber(n: number): MouseButtonEnum {
         switch (n) {
@@ -37,11 +41,12 @@ export class MouseButtonEvent {
         this.mousePos = mousePos;
     }
 }
-
-export class InputState {
+ 
+class InputState implements InputStateView {
     public mousePos: MousePos = { x: 0, y: 0 };
     public buttonEvents: MouseButtonEvent[] = [];
     public keyEvents: {key: string, pressed: boolean}[] = [];
+    public scrollEvents: {directionY: Direction}[] = [];
 
     public setPos(m: MousePos): InputState {
         this.mousePos = m;
@@ -57,8 +62,23 @@ export class InputState {
         this.keyEvents.push({key: key, pressed: pressed});
         return this;
     }
+
+    public addScrollEvent(directionY: Direction): InputState {
+        this.scrollEvents.push({directionY: directionY});
+        return this;
+    }
 }
 
+export interface InputStateView {
+    readonly mousePos: MousePos;
+    readonly buttonEvents: MouseButtonEvent[];
+    readonly keyEvents: {key: string, pressed: boolean}[];
+    readonly scrollEvents: {directionY: Direction}[];
+}
+
+/**
+ * Maintains input state of current frame; abstracts from platform input.
+ */
 export class InputController {
     private input: InputState = new InputState();
 
@@ -88,7 +108,16 @@ export class InputController {
         this.input.addKeyEvent(e.code, false);
     }
 
-    public tick(): InputState {
+    public onScroll(e: WheelEvent) {
+        e.preventDefault();
+
+        this.input.addScrollEvent(e.deltaY > 0 ? Direction.UP : Direction.DOWN);
+    }
+
+    /**
+     * Flush & clear state
+     */
+    public tick(): InputStateView {
         const out = this.input;
         this.input = new InputState().setPos(out.mousePos);
         return out;

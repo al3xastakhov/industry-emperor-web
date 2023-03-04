@@ -12,8 +12,6 @@ const $c = _ => document.createElement(_)
 
 let drawingContainer, canvas: HTMLCanvasElement;
 
-let ntiles: number;
-
 let frameCount = 0;
 
 let world: World;
@@ -30,23 +28,12 @@ texture.onload = _ => init()
 
 const init = () => {
 
-	let map = []; // [0,0]
-	const k = 20;
-
-	console.log(`Starting with k=${k}`);
-	for (let i = 0; i < k; i++) {
-		let cur = [];
-		for (let j = 0; j < k; j++) {
-			cur.push([0, 0]);
-		}
-		map.push(cur);
-	}
-	ntiles = map.length;
-	loadHashState(map, document.location.hash.substring(1), ntiles, Graphics._textureWidth);
+	const size = 20;
+	let map = loadMap(size);
 
 	drawingContainer = $("#drawing-container");
 	canvas = $("#bg");
-	window.addEventListener('resize', resize);
+	window.addEventListener('resize', onResize);
 
 	ui = new UI();
 	graphics = new Graphics(canvas, texture);
@@ -55,20 +42,19 @@ const init = () => {
 	inputController = new InputController();
 	gameController = new GameController(graphics, inputController);
 
-	resize();
+	onResize();
 
+	// Input bindings
 	canvas.addEventListener('contextmenu', e => inputController.onMouseDown(e))
 	canvas.addEventListener('mousemove', e => inputController.onMouseMove(e));
 	canvas.addEventListener('mousedown', e => inputController.onMouseDown(e));
+	// not needed for now
+	// canvas.addEventListener('mouseup', e => inputController.onMouseUp(e));
+	canvas.addEventListener('wheel', e => inputController.onScroll(e));
 	window.addEventListener('keydown', e => inputController.onKeyDown(e));
 	window.addEventListener('keyup', e => inputController.onKeyUp(e));
 
-	// canvas.addEventListener('mousemove', onHover);
-	// canvas.addEventListener('mouseup', e => inputController.onMouseUp(e));
-
-	// TODO:
-	canvas.addEventListener("wheel", onScroll);
-
+	// Game loop
 	setInterval(tick, 1000 / 300);
 	setInterval(() => {
 		ui.fps.update(frameCount);
@@ -78,26 +64,21 @@ const init = () => {
 	renderTools();
 }
 
-function renderTools() {
-	let tools = $('#tools');
+function loadMap(size: number) {
+	console.log(`Starting with k=${size}`);
 
-	let toolCount = 0;
-	for (let i = 0; i < Graphics._textureHeight; i++) {
-		for (let j = 0; j < Graphics._textureWidth; j++) {
-			const div = $c('div');
-			div.id = `tool_${toolCount++}`;
-			div.style.display = "block";
-			/* width of 132 instead of 130  = 130 image + 2 border = 132 */
-			div.style.backgroundPosition = `-${j * 130 + 2}px -${i * 230}px`;
-			div.addEventListener('click', (_: MouseEvent) => {
-				gameController.setGameMode(GameModeType.BUILD);
-				gameController.setGameModeData({
-					tool: {x: i, y: j},
-				});
-			});
-			tools.appendChild(div);
+	let map = []; // [0,0]
+	for (let i = 0; i < size; i++) {
+		let cur = [];
+		for (let j = 0; j < size; j++) {
+			cur.push([0, 0]);
 		}
+		map.push(cur);
 	}
+
+	loadHashState(map, document.location.hash.substring(1), map.length, Graphics._textureWidth);
+	
+	return map;
 }
 
 function tick() {
@@ -114,16 +95,9 @@ function tick() {
 	frameCount += 1;
 }
 
-function resize() {
+function onResize() {
 	canvas.width = drawingContainer.offsetWidth;
 	canvas.height = drawingContainer.offsetHeight;
-}
-
-function onScroll(e) {
-	e.preventDefault();
-
-	if (e.deltaY < 0) graphics.camera.zoomOut();
-	else if (e.deltaY > 0) graphics.camera.zoomIn();
 }
 
 function activateTab(e) {
@@ -146,6 +120,28 @@ function activateTab(e) {
 		case "#details":
 			gameController.setGameMode(GameModeType.INSPECT);
 			break;
+	}
+}
+
+function renderTools() {
+	let tools = $('#tools');
+
+	let toolCount = 0;
+	for (let i = 0; i < Graphics._textureHeight; i++) {
+		for (let j = 0; j < Graphics._textureWidth; j++) {
+			const div = $c('div');
+			div.id = `tool_${toolCount++}`;
+			div.style.display = "block";
+			/* width of 132 instead of 130  = 130 image + 2 border = 132 */
+			div.style.backgroundPosition = `-${j * 130 + 2}px -${i * 230}px`;
+			div.addEventListener('click', (_: MouseEvent) => {
+				gameController.setGameMode(GameModeType.BUILD);
+				gameController.setGameModeData({
+					tool: {x: i, y: j},
+				});
+			});
+			tools.appendChild(div);
+		}
 	}
 }
 

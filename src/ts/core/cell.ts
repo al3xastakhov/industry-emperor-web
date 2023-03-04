@@ -1,6 +1,7 @@
 import { Graphics } from "./graphics";
 import { Pos } from "./utils";
 
+// TODO: should not be a part of "core/cell"
 export enum CellType {
     Empty = "Empty",
     ResidentialBuilding = "ResidentialBuilding",

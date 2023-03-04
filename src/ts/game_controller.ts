@@ -1,7 +1,7 @@
 import { CellPos } from "./core/cell";
 import { Graphics } from "./core/graphics";
-import { InputController, InputState, MouseButtonEvent } from "./core/input";
-import { Pos } from "./core/utils";
+import { Direction, InputController, InputStateView, MouseButtonEvent } from "./core/input";
+import { MousePos, Pos } from "./core/utils";
 import { WorldState } from "./world";
 
 export enum GameModeType {
@@ -99,7 +99,7 @@ export class GameController {
         const rawInput = this.inputController.tick();
 
         this.handleKeyboardInput(rawInput);
-        this.handleCameraMoves();
+        this.handleCameraMoves(rawInput);
 
         return {
             oldWorldState: this.oldWorldState,
@@ -113,7 +113,7 @@ export class GameController {
         };
     }
 
-    private handleKeyboardInput(input: InputState) {
+    private handleKeyboardInput(input: InputStateView) {
         input.keyEvents.forEach(e => {
             if (e.pressed) {
                 this.pressedKeys.add(e.key);
@@ -123,7 +123,7 @@ export class GameController {
         });
     }
 
-    private handleCameraMoves() {
+    private handleCameraMoves(input: InputStateView) {
         const delta = 4.5;
 
         for (let k of this.pressedKeys) {
@@ -142,6 +142,19 @@ export class GameController {
                     break;
             }
         }
+
+        input.scrollEvents.forEach(e => {
+            switch (e.directionY) {
+                case Direction.UP:
+                    this.graphics.camera.zoomIn();
+                    break;
+                case Direction.DOWN:
+                    this.graphics.camera.zoomOut();
+                    break;
+                default:
+                    throw new Error("Other scroll event types are not handled");
+            }
+        });
     }
 
 }
