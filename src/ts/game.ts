@@ -1,4 +1,4 @@
-import { BuildModeData, GameInput, GameMode, GameOutput } from "./game_controller";
+import { BuildModeData, GameInput, GameModeType, GameOutput } from "./game_controller";
 import { Pos } from "./utils";
 import { Cell, CellType, World, WorldState } from "./world";
 
@@ -40,7 +40,7 @@ export class Game {
         const cellPos = input.playerInput.cellPos;
         input.playerInput.buttonEvents.filter(e => e.rawEvent.isPress).forEach(e => {
             switch (input.mode) {
-                case GameMode.BUILD:
+                case GameModeType.BUILD:
                     console.log("build!")
                     const tool = (input.gameModeData as BuildModeData).tool;
                     this.world.setCell(new Cell(
@@ -49,7 +49,7 @@ export class Game {
                         CellType.fromNumber(Pos.toArr(tool))
                     ));
                     break;
-                case GameMode.INSPECT:
+                case GameModeType.INSPECT:
                     const cell = this.world.getCell(cellPos);
                     const cells = this.world.getSurroundingCells(cell, 2, new Set());
                     cells.forEach(c => {
@@ -100,7 +100,7 @@ export class Game {
 
 class GameOutputBuilder {
     public newWorldState: WorldState = WorldState.EMPTY;
-    public mode: GameMode = GameMode.IDLE;
+    public mode: GameModeType = GameModeType.IDLE;
     public uiChanges: {
         component: string,
         method: string,

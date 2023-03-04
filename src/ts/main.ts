@@ -1,5 +1,5 @@
 import { Game } from "./game";
-import { GameController, GameMode } from "./game_controller";
+import { GameController, GameModeType } from "./game_controller";
 import { Graphics } from "./graphics";
 import { InputController } from "./input";
 import { UI } from "./ui";
@@ -58,13 +58,16 @@ const init = () => {
 	resize();
 
 	canvas.addEventListener('contextmenu', e => inputController.onMouseDown(e))
-	// canvas.addEventListener('mousemove', onHover);
 	canvas.addEventListener('mousemove', e => inputController.onMouseMove(e));
-	// canvas.addEventListener('mouseup', e => inputController.onMouseUp(e));
 	canvas.addEventListener('mousedown', e => inputController.onMouseDown(e));
+	window.addEventListener('keydown', e => inputController.onKeyDown(e));
+	window.addEventListener('keyup', e => inputController.onKeyUp(e));
+
+	// canvas.addEventListener('mousemove', onHover);
+	// canvas.addEventListener('mouseup', e => inputController.onMouseUp(e));
+
 	// TODO:
 	canvas.addEventListener("wheel", onScroll);
-	addEventListener("keydown", onKeyPress);
 
 	setInterval(tick, 1000 / 300);
 	setInterval(() => {
@@ -86,10 +89,10 @@ function renderTools() {
 			div.style.display = "block";
 			/* width of 132 instead of 130  = 130 image + 2 border = 132 */
 			div.style.backgroundPosition = `-${j * 130 + 2}px -${i * 230}px`;
-			div.addEventListener('click', e => {
-				gameController.setGameMode(GameMode.BUILD);
+			div.addEventListener('click', (_: MouseEvent) => {
+				gameController.setGameMode(GameModeType.BUILD);
 				gameController.setGameModeData({
-					tool: [i, j],
+					tool: {x: i, y: j},
 				});
 			});
 			tools.appendChild(div);
@@ -116,24 +119,6 @@ function resize() {
 	canvas.height = drawingContainer.offsetHeight;
 }
 
-function onKeyPress(event: KeyboardEvent) {
-	const delta = 100;
-	switch (event.code) {
-		case "ArrowUp":
-			graphics.camera.move({x: 0, y: -delta});
-			break;
-		case "ArrowDown":
-			graphics.camera.move({x: 0, y: delta});
-			break;
-		case "ArrowLeft":
-			graphics.camera.move({x: -delta, y: 0});
-			break;
-		case "ArrowRight":
-			graphics.camera.move({x: delta, y: 0});
-			break;
-	}
-}
-
 function onScroll(e) {
 	e.preventDefault();
 
@@ -156,10 +141,10 @@ function activateTab(e) {
 
 	switch (selector) {
 		case "#tools":
-			gameController.setGameMode(GameMode.BUILD);
+			gameController.setGameMode(GameModeType.BUILD);
 			break;
 		case "#details":
-			gameController.setGameMode(GameMode.INSPECT);
+			gameController.setGameMode(GameModeType.INSPECT);
 			break;
 	}
 }

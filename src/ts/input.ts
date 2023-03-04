@@ -39,9 +39,10 @@ export class MouseButtonEvent {
     }
 }
 
-class InputState {
+export class InputState {
     public mousePos: MousePos = { x: 0, y: 0 };
     public buttonEvents: MouseButtonEvent[] = [];
+    public keyEvents: {key: string, pressed: boolean}[] = [];
 
     public setPos(m: MousePos): InputState {
         this.mousePos = m;
@@ -50,6 +51,11 @@ class InputState {
 
     public addClick(e: MouseButtonEvent): InputState {
         this.buttonEvents.push(e);
+        return this;
+    }
+
+    public addKeyEvent(key: string, pressed: boolean): InputState {
+        this.keyEvents.push({key: key, pressed: pressed});
         return this;
     }
 }
@@ -73,6 +79,14 @@ export class InputController {
         this.input.addClick(new MouseButtonEvent(
             false, MouseButtonEnum.fromNumber(e.buttons), e.detail, new MousePos(e.offsetX, e.offsetY)
         ));
+    }
+
+    public onKeyDown(e: KeyboardEvent) {
+        this.input.addKeyEvent(e.code, true);
+    }
+
+    public onKeyUp(e: KeyboardEvent) {
+        this.input.addKeyEvent(e.code, false);
     }
 
     public tick(): InputState {

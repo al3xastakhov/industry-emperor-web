@@ -1,9 +1,9 @@
 import { Graphics } from "./graphics";
-import { InputController, MouseButtonEvent } from "./input";
+import { InputController, InputState, MouseButtonEvent } from "./input";
 import { Pos } from "./utils";
 import { CellPos, WorldState } from "./world";
 
-export enum GameMode {
+export enum GameModeType {
     IDLE, BUILD, INSPECT
 }
 
@@ -14,22 +14,21 @@ export interface BuildModeData {
 export class GameInput {
     public readonly oldWorldState: WorldState;
     public readonly playerInput: PlayerInput;
-    
+
     // TODO: combine
-    public readonly mode: GameMode;
+    public readonly mode: GameModeType;
     public readonly gameModeData: {} | BuildModeData;
 }
 
 export class GameOutput {
     public readonly newWorldState: WorldState;
-    public readonly mode: GameMode;
-    // TODO: change this dumb thing
+    public readonly mode: GameModeType;
     public readonly uiChanges: {
         component: string,
         method: string,
         data: any
     }[];
-    constructor(newWorldState: WorldState, mode: GameMode, uiChanges: any) {
+    constructor(newWorldState: WorldState, mode: GameModeType, uiChanges: any) {
         this.newWorldState = newWorldState
         this.mode = mode
         this.uiChanges = uiChanges
@@ -58,29 +57,32 @@ export class PlayerInput {
 }
 
 /**
- * Binds various input with graphics, producing input for the game logic
+ * Binds various inputs with graphics, producing input for the game logic
  */
 export class GameController {
     private readonly graphics: Graphics;
     private readonly inputController: InputController;
 
     private oldWorldState: WorldState;
-    
-    private gameMode: GameMode;
-    private gameModeData: {} | BuildModeData = {};
+
+    private gameMode: GameModeType;
+    private gameModeData?: BuildModeData;
+
+    // required for camera moves
+    private pressedKeys: Set<string> = new Set();
 
     constructor(graphics: Graphics, inputController: InputController) {
         this.graphics = graphics;
         this.inputController = inputController;
-        this.gameMode = GameMode.BUILD;
+        this.gameMode = GameModeType.BUILD;
         this.oldWorldState = WorldState.EMPTY;
     }
 
-    public setGameMode(m: GameMode) {
+    public setGameMode(m: GameModeType) {
         this.gameMode = m;
     }
 
-    public setGameModeData(d: {} | BuildModeData) {
+    public setGameModeData(d: BuildModeData) {
         this.gameModeData = d;
     }
 
@@ -90,6 +92,10 @@ export class GameController {
 
     public tick(): GameInput {
         const rawInput = this.inputController.tick();
+
+        this.handleKeyboardInput(rawInput);
+        this.handleCameraMoves();
+
         return {
             oldWorldState: this.oldWorldState,
             mode: this.gameMode,
@@ -100,6 +106,37 @@ export class GameController {
                     .map(e => new CellMouseButtonEvent(e, this.graphics.getTilePosition(e.mousePos))),
             },
         };
+    }
+
+    private handleKeyboardInput(input: InputState) {
+        input.keyEvents.forEach(e => {
+            if (e.pressed) {
+                this.pressedKeys.add(e.key);
+            } else {
+                this.pressedKeys.delete(e.key);
+            }
+        });
+    }
+
+    private handleCameraMoves() {
+        const delta = 4.5;
+
+        for (let k of this.pressedKeys) {
+            switch (k) {
+                case "ArrowUp":
+                    this.graphics.camera.move({x: 0, y: -delta});
+                    break;
+                case "ArrowDown":
+                    this.graphics.camera.move({x: 0, y: delta});
+                    break;
+                case "ArrowLeft":
+                    this.graphics.camera.move({x: -delta, y: 0});
+                    break;
+                case "ArrowRight":
+                    this.graphics.camera.move({x: delta, y: 0});
+                    break;
+            }
+        }
     }
 
 }
