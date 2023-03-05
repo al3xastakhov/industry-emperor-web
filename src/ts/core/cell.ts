@@ -1,4 +1,5 @@
 import { Graphics } from "./graphics";
+import { Texture } from "./texture";
 import { Pos } from "./utils";
 
 // TODO: should not be a part of "core/cell"
@@ -12,40 +13,52 @@ export enum CellType {
     CityDecor = "CityDecor",
 };
 
-// TODO: get rid of it eventually
-export namespace CellType {
-    export function fromNumber(arr: number[]) {
-        const num = arr[0] * Graphics._textureWidth + arr[1];
-        return num == 0 ? CellType.Empty
-            : [47, 71].includes(num) ? CellType.Storage
-                : [46, 54, 56, 66, 69].includes(num) ? CellType.Shop
-                    : [1, 48, 49, 50, 51, 52, 53].includes(num) ? CellType.CityDecor
-                        : [64, 65, 68].includes(num) ? CellType.Factory
-                            : num < 54 ? CellType.Road
-                                : CellType.ResidentialBuilding;
-    }
-}
-
 export class CellPos extends Pos { }
 
 
-export class ViewOptions {
-    public highlight?: {
+/**
+    === Cell rendering ===
+
+    |   |   |   |   |
+    |   |(x)| x |   |
+    |   | x | x |   |
+    |   |   |   |   |
+
+    (x) - cell with texture coordinates (0, 0) - should be rendered by core/graphics, 
+    others are just part of the bigger entity X
+
+    renderer should just know if `this cell's texture` has to be rendered
+
+    relevant things for renderer:
+    Cell {
+        texture,
+        should_render
+    }
+*/
+export class RenderOptions {
+    public renderTexture: boolean = true;
+
+    public highlight: {
         color: string,
         opacity: number // 0..1
-    };
+    } | null;
+
+    constructor(renderTexture: boolean, highlight: {color: string, opacity: number} = null) {
+        this.renderTexture = renderTexture;
+        this.highlight = highlight;
+    }
 }
 
 export class Cell {
-    public texture: Pos;
+    public texture: Texture;
     public pos: CellPos;
     public type: CellType;
-    public viewOptions: ViewOptions;
+    public renderOptions: RenderOptions;
 
-    constructor(texture: Pos, pos: CellPos, type: CellType, viewOptions: ViewOptions = {}) {
+    constructor(texture: Texture, pos: CellPos, type: CellType, renderOptions: RenderOptions) {
         this.texture = texture;
         this.pos = pos;
         this.type = type;
-        this.viewOptions = viewOptions;
+        this.renderOptions = renderOptions;
     }
 }

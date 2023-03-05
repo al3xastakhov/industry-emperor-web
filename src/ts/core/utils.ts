@@ -27,6 +27,28 @@ export namespace Pos {
 	}
 }
 
+export function loadImageBitmap(url: string): Promise<ImageBitmap> {
+	return new Promise((resolve, reject) => {
+		const xhr = new XMLHttpRequest();
+		xhr.open("GET", url, true);
+		xhr.responseType = "blob";
+		xhr.onload = function () {
+			if (xhr.status === 200) {
+				const blob = xhr.response;
+				createImageBitmap(blob).then((imageBitmap) => {
+					resolve(imageBitmap);
+				});
+			} else {
+				reject(new Error("Failed to load image from URL " + url));
+			}
+		};
+		xhr.onerror = function () {
+			reject(new Error("Failed to load image from URL " + url));
+		};
+		xhr.send();
+	});
+}
+
 // TODO: get rid of this !
 
 // From https://stackoverflow.com/a/36046727

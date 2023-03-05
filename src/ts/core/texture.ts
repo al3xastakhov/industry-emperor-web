@@ -1,4 +1,4 @@
-import { Pos } from "./utils";
+import { loadImageBitmap, Pos } from "./utils";
 
 export class Texture {
     public readonly img: ImageBitmap;
@@ -17,7 +17,7 @@ export class TexturePos extends Pos { }
  * Holds multiple textures within
  */
 export class TexturePack {
-    private image: HTMLImageElement;
+    private image: ImageBitmap;
     public readonly src: string;
 
     // dims of the texture pack
@@ -30,56 +30,33 @@ export class TexturePack {
 
     private textureCache = {};
 
-    // TODO: rename args
-    constructor(src: string, textureWidth: number, textureHeight: number) {
+    constructor(src: string, textureCols: number, textureRows: number, textureHeightPx: number, textureWidthPx: number) {
         this.src = src;
-        this.textureRows = textureWidth
-        this.textureCols = textureHeight
+        this.textureCols = textureCols;
+        this.textureRows = textureRows;
+        this.textureHeightPx = textureHeightPx;
+        this.textureWidthPx = textureWidthPx;
     }
 
-    public load(): Promise<void> {
-        this.image = new Image();
-        this.image.src = this.src;
-
-        return new Promise<void>((resolve, reject) => {
-            this.image.addEventListener('load', () => resolve());
-            this.image.addEventListener('error', (err: any) => reject(err));
-        });
+    public async load(): Promise<void> {
+        this.image = await loadImageBitmap(this.src);
     }
 
     public async get(pos: TexturePos): Promise<Texture> {
         const strPos = pos.toString();
         if (this.textureCache[strPos]) return Promise.resolve(this.textureCache[strPos]);
 
-        const img = await createImageBitmap(this.image, pos.x, pos.y, this.textureRows, this.textureCols);
+        const img = await createImageBitmap(
+            this.image,
+            pos.x * this.textureWidthPx,
+            pos.y * this.textureHeightPx,
+            this.textureWidthPx,
+            this.textureHeightPx
+        );
 
-        return this.textureCache[strPos] = new Texture(img);
+        this.textureCache[strPos] = new Texture(img);
+
+        return this.textureCache[strPos];
     }
 
 }
-
-
-/*
-
-
-|   |   |   |   |
-|   |(x)| x |   |
-|   | x | x |   |
-|   |   |   |   |
-
-(x) - cell with texture coordinates (0, 0) - should be rendered by core, 
-others are just part of the bigger entity X
-
-renderer should just know if `this cell's texture` has to be rendered
-
-Cell {
-    texture {
-        img, should_render
-    }
-}
-
-*/
-
-
-
-

@@ -16,7 +16,7 @@ export class Game {
         output.mode = input.mode;
 
         // clear highlighting
-        this.world.highlightedCells.forEach(c => c.viewOptions.highlight = null);
+        this.world.highlightedCells.forEach(c => c.renderOptions.highlight = null);
         this.world.highlightedCells.clear();
 
         // add cursor
@@ -26,7 +26,7 @@ export class Game {
 
         this.handlePlayerInput(input, output);
 
-        this.world.highlightedCells.forEach(c => c.viewOptions.highlight = {
+        this.world.highlightedCells.forEach(c => c.renderOptions.highlight = {
             color: 'rgba(0,0,0,0.2)',
             opacity: 0.5
         });
@@ -57,12 +57,14 @@ export class Game {
     }
 
     private handleClick_Build(input: GameInput, cellPos: CellPos) {
-        const tool = (input.gameModeData as BuildModeData).tool;
-        this.world.setCell(new Cell(
-            Pos.swap(tool),
-            cellPos,
-            CellType.fromNumber(Pos.toArr(tool))
-        ));
+        // TODO: fixme
+
+        // const tool = (input.gameModeData as BuildModeData).tool;
+        // this.world.setCell(new Cell(
+        //     Pos.swap(tool),
+        //     cellPos,
+        //     CellType.fromNumber(Pos.toArr(tool))
+        // ));
     }
 
     private handleClick_Inspect(cellPos: CellPos, output: GameOutput) {
@@ -70,7 +72,7 @@ export class Game {
         const cells = this.world.getSurroundingCells(cell, 2, new Set());
         cells.forEach(c => {
             this.world.highlightedCells.add(c);
-            c.viewOptions.highlight = {
+            c.renderOptions.highlight = {
                 color: 'rgba(11, 127, 171,0.2)',
                 opacity: 0.5
             };

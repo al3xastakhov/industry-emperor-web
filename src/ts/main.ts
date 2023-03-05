@@ -1,5 +1,7 @@
+import { Cell, CellType, RenderOptions } from "./core/cell";
 import { Graphics } from "./core/graphics";
-import { InputController, MousePos } from "./core/input";
+import { InputController } from "./core/input";
+import { TexturePack, TexturePos } from "./core/texture";
 import { loadHashState } from "./core/utils";
 import { Game } from "./game";
 import { GameController, GameModeType } from "./game_controller";
@@ -19,23 +21,21 @@ let graphics: Graphics;
 let gameController: GameController;
 let game: Game;
 
-/* texture from https://opengameart.org/content/isometric-landscape */
-const texture = new Image()
-texture.src = "assets/textures/bg.png"
-texture.onload = _ => init()
+// texture source: https://opengameart.org/content/isometric-landscape
+const texturePack = new TexturePack("assets/textures/bg.png", 12, 6, 230, 130);
+texturePack.load().then(_ => main());
 
-const init = () => {
-
+async function main() {
 	const size = 20;
-	let map = loadMap(size);
-	let world = World.fromTextureArray(map);
+	let map = MapLoader.loadMap(size);
+	let world = await MapLoader.fromTextureArray(map);
 	game = new Game(world);
 
 	drawingContainer = $("#drawing-container");
 	canvas = $("#bg");
 
 	ui = new UI();
-	graphics = new Graphics(canvas, texture);
+	graphics = new Graphics(canvas);
 	let inputController = new InputController();
 	gameController = new GameController(graphics, inputController);
 
@@ -60,25 +60,7 @@ const init = () => {
 		frameCount = 0;
 	}, 1000);
 
-	renderTools();
-}
-
-// TODO: get rid of it
-function loadMap(size: number) {
-	console.log(`Starting with k=${size}`);
-
-	let map = []; // [0,0]
-	for (let i = 0; i < size; i++) {
-		let cur = [];
-		for (let j = 0; j < size; j++) {
-			cur.push([0, 0]);
-		}
-		map.push(cur);
-	}
-
-	loadHashState(map, document.location.hash.substring(1), map.length, Graphics._textureWidth);
-	
-	return map;
+	ToolsUi.renderTools(texturePack.textureRows, texturePack.textureCols);
 }
 
 function tick() {
@@ -89,7 +71,7 @@ function tick() {
 
 	// TODO: consider having separate "thread" for graphics
 	graphics.tick(gameOutput.newWorldState);
-	
+
 	gameOutput.uiChanges.forEach(c => ui.execute(c));
 
 	frameCount += 1;
@@ -100,50 +82,103 @@ function onResize() {
 	canvas.height = drawingContainer.offsetHeight;
 }
 
-function activateTab(e: HTMLElement) {
-	const selector = e.getAttribute("data-tab");
-	for (const child of $("#instruments").children) {
-		child.style.display = "none";
-	}
-	for (const child of $("#btns").children) {
-		child.classList.remove("btn-dark");
-		child.classList.add("btn-outline-dark");
-	}
-	e.classList.remove("btn-outline-dark");
-	e.classList.add("btn-dark");
-	$(selector).style.display = "flex";
+// TODO: get rid of it eventually
+namespace MapLoader {
+	export async function fromTextureArray(arr: [][]): Promise<World> {
+		let newArr = [];
+		for (let i = 0; i < arr.length; i++) {
+			let cur = [];
+			for (let j = 0; j < arr[0].length; j++) {
+				const texture = await texturePack.get(new TexturePos(arr[i][j][1], arr[i][j][0]));
+				cur.push(new Cell(
+					texture,
+					{ x: i, y: j },
+					cellTypeFromNumber(arr[i][j], texturePack.textureCols),
+					new RenderOptions(true)
+				));
+			}
+			newArr.push(cur);
+		}
 
-	switch (selector) {
-		case "#tools":
-			gameController.setGameMode(GameModeType.BUILD);
-			break;
-		case "#details":
-			gameController.setGameMode(GameModeType.INSPECT);
-			break;
+		return new World(newArr);
+	}
+
+	function cellTypeFromNumber(arr: number[], cols: number) {
+		const num = arr[0] * cols + arr[1];
+		return num == 0 ? CellType.Empty
+			: [47, 71].includes(num) ? CellType.Storage
+				: [46, 54, 56, 66, 69].includes(num) ? CellType.Shop
+					: [1, 48, 49, 50, 51, 52, 53].includes(num) ? CellType.CityDecor
+						: [64, 65, 68].includes(num) ? CellType.Factory
+							: num < 54 ? CellType.Road
+								: CellType.ResidentialBuilding;
+	}
+
+	export function loadMap(size: number) {
+		console.log(`Starting with k=${size}`);
+
+		let map = []; // [0,0]
+		for (let i = 0; i < size; i++) {
+			let cur = [];
+			for (let j = 0; j < size; j++) {
+				cur.push([0, 0]);
+			}
+			map.push(cur);
+		}
+
+		loadHashState(map, document.location.hash.substring(1), map.length, texturePack.textureCols);
+
+		return map;
 	}
 }
 
-function renderTools() {
-	let tools = $('#tools');
-
-	let toolCount = 0;
-	for (let i = 0; i < Graphics._textureHeight; i++) {
-		for (let j = 0; j < Graphics._textureWidth; j++) {
-			const div = $c('div');
-			div.id = `tool_${toolCount++}`;
-			div.style.display = "block";
-			/* width of 132 instead of 130  = 130 image + 2 border = 132 */
-			div.style.backgroundPosition = `-${j * 130 + 2}px -${i * 230}px`;
-			div.addEventListener('click', (_: MouseEvent) => {
+// TODO: get rid of it
+namespace ToolsUi {
+	export function activateTab(e: HTMLElement) {
+		const selector = e.getAttribute("data-tab");
+		for (const child of $("#instruments").children) {
+			child.style.display = "none";
+		}
+		for (const child of $("#btns").children) {
+			child.classList.remove("btn-dark");
+			child.classList.add("btn-outline-dark");
+		}
+		e.classList.remove("btn-outline-dark");
+		e.classList.add("btn-dark");
+		$(selector).style.display = "flex";
+	
+		switch (selector) {
+			case "#tools":
 				gameController.setGameMode(GameModeType.BUILD);
-				gameController.setGameModeData({
-					tool: {x: i, y: j},
+				break;
+			case "#details":
+				gameController.setGameMode(GameModeType.INSPECT);
+				break;
+		}
+	}
+	
+	export function renderTools(rows: number, cols: number) {
+		let tools = $('#tools');
+	
+		let toolCount = 0;
+		for (let i = 0; i < rows; i++) {
+			for (let j = 0; j < cols; j++) {
+				const div = $c('div');
+				div.id = `tool_${toolCount++}`;
+				div.style.display = "block";
+				/* width of 132 instead of 130  = 130 image + 2 border = 132 */
+				div.style.backgroundPosition = `-${j * 130 + 2}px -${i * 230}px`;
+				div.addEventListener('click', (_: MouseEvent) => {
+					gameController.setGameMode(GameModeType.BUILD);
+					gameController.setGameModeData({
+						tool: { x: i, y: j },
+					});
 				});
-			});
-			tools.appendChild(div);
+				tools.appendChild(div);
+			}
 		}
 	}
 }
 
 // exports to dumb HTML
-window["activateTab"] = activateTab;
+window["activateTab"] = ToolsUi.activateTab;

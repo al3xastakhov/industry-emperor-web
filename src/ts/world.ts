@@ -3,28 +3,6 @@ import { Pos } from "./core/utils";
 
 export class World {
 
-    /**
-     * @param {[[number, number]]} arr
-     * @returns {World}
-     */
-    static fromTextureArray(arr: [][]): World {
-        let newArr = [];
-        for (let i = 0; i < arr.length; i++) {
-            let cur = [];
-            for (let j = 0; j < arr[0].length; j++) {
-                cur.push(new Cell(
-                    { x: arr[i][j][1], y: arr[i][j][0] },
-                    { x: i, y: j },
-                    CellType.fromNumber(arr[i][j]),
-                    {}
-                ));
-            }
-            newArr.push(cur);
-        }
-
-        return new World(newArr);
-    }
-
     public cells: Cell[][];
     public highlightedCells: Set<Cell>;
 
