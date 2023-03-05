@@ -1,5 +1,5 @@
 import { Graphics } from "./core/graphics";
-import { InputController } from "./core/input";
+import { InputController, MousePos } from "./core/input";
 import { loadHashState } from "./core/utils";
 import { Game } from "./game";
 import { GameController, GameModeType } from "./game_controller";
@@ -21,7 +21,7 @@ let game: Game;
 
 /* texture from https://opengameart.org/content/isometric-landscape */
 const texture = new Image()
-texture.src = "textures/bg.png"
+texture.src = "assets/textures/bg.png"
 texture.onload = _ => init()
 
 const init = () => {
@@ -63,6 +63,7 @@ const init = () => {
 	renderTools();
 }
 
+// TODO: get rid of it
 function loadMap(size: number) {
 	console.log(`Starting with k=${size}`);
 

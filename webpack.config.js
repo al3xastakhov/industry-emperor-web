@@ -39,15 +39,11 @@ module.exports = {
         new CopyPlugin({
             patterns: [
                 {
-                    from: "./favicon.png",
-                    to: "./favicon.png"
+                    from: "./assets/",
+                    to: "./assets/",
                 },
                 {
-                    from: "./textures/*.*",
-                    to: "./",
-                },
-                {
-                    from: "./src/css/style.css",
+                    from: "./src/css/",
                     to: "./css/",
                 }
             ],

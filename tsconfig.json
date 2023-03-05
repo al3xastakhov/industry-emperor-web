@@ -11,5 +11,5 @@
     "rootDir": ".",
     "target": "ES6"
   },
-  "include": ["src", "textures", "css"]
+  "include": ["src", "assets/textures", "css"]
 }

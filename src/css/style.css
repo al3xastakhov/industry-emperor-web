@@ -28,7 +28,7 @@ p.ui {
 
 #tools > div {
 	display: block;
-	background-image: url('../textures/bg.png');
+	background-image: url('../assets/textures/bg.png');
 	background-repeat: no-repeat;
 	background-size: auto;
 	width: 130px;
