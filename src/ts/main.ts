@@ -1,4 +1,4 @@
-import { Cell, CellType, RenderOptions } from "./core/cell";
+import { Cell, CellPos, CellType, RenderOptions } from "./core/cell";
 import { Graphics } from "./core/graphics";
 import { InputController } from "./core/input";
 import { TexturePack, TexturePos } from "./core/texture";
@@ -103,7 +103,7 @@ namespace MapLoader {
 		return new World(newArr);
 	}
 
-	function cellTypeFromNumber(arr: number[], cols: number) {
+	export function cellTypeFromNumber(arr: number[], cols: number) {
 		const num = arr[0] * cols + arr[1];
 		return num == 0 ? CellType.Empty
 			: [47, 71].includes(num) ? CellType.Storage
@@ -168,10 +168,14 @@ namespace ToolsUi {
 				div.style.display = "block";
 				/* width of 132 instead of 130  = 130 image + 2 border = 132 */
 				div.style.backgroundPosition = `-${j * 130 + 2}px -${i * 230}px`;
-				div.addEventListener('click', (_: MouseEvent) => {
+				div.addEventListener('click', async (_: MouseEvent) => {
+					const txt = await texturePack.get(new TexturePos(j, i));
 					gameController.setGameMode(GameModeType.BUILD);
 					gameController.setGameModeData({
-						tool: { x: i, y: j },
+						cell: new Cell(txt, 
+							new CellPos(0, 0),  // should be ignored
+							MapLoader.cellTypeFromNumber([i, j], texturePack.textureCols), 
+							new RenderOptions(true)),  // should be ignored
 					});
 				});
 				tools.appendChild(div);

@@ -1,7 +1,8 @@
 import { BuildModeData, GameInput, GameModeType, GameOutput } from "./game_controller";
 import { Pos } from "./core/utils";
 import { World, WorldState } from "./world";
-import { CellPos, Cell, CellType } from "./core/cell";
+import { CellPos, Cell, CellType, RenderOptions } from "./core/cell";
+import { TexturePack } from "./core/texture";
 
 export class Game {
 
@@ -59,12 +60,13 @@ export class Game {
     private handleClick_Build(input: GameInput, cellPos: CellPos) {
         // TODO: fixme
 
-        // const tool = (input.gameModeData as BuildModeData).tool;
-        // this.world.setCell(new Cell(
-        //     Pos.swap(tool),
-        //     cellPos,
-        //     CellType.fromNumber(Pos.toArr(tool))
-        // ));
+        const tool = (input.gameModeData as BuildModeData).cell;
+        this.world.setCell(new Cell(
+            tool.texture,
+            cellPos,
+            tool.type,
+            new RenderOptions(true)
+        ));
     }
 
     private handleClick_Inspect(cellPos: CellPos, output: GameOutput) {

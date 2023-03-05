@@ -1,7 +1,6 @@
-import { CellPos } from "./core/cell";
+import { Cell, CellPos } from "./core/cell";
 import { Graphics } from "./core/graphics";
 import { Direction, InputController, InputStateView, MouseButtonEvent } from "./core/input";
-import { Pos } from "./core/utils";
 import { WorldState } from "./world";
 
 export enum GameModeType {
@@ -9,7 +8,7 @@ export enum GameModeType {
 }
 
 export interface BuildModeData {
-    tool: Pos,
+    cell: Cell
 }
 
 export class GameInput {
@@ -79,7 +78,8 @@ export class GameController {
         this.graphics = graphics;
         this.inputController = inputController;
         this.gameMode = GameModeType.BUILD;
-        this.setGameModeData({tool: {x: 0, y: 0}});
+        // TODO: fix
+        this.setGameModeData({cell: null});
         this.oldWorldState = WorldState.EMPTY;
     }
 
