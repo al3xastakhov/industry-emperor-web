@@ -1,4 +1,6 @@
-import { MousePos } from "./utils";
+import { Pos } from "./utils";
+
+export class MousePos extends Pos { }
 
 export enum MouseButtonEnum {
     UNKNOWN, LEFT, MIDDLE, RIGHT

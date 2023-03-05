@@ -1,7 +1,7 @@
 import { CellPos } from "./core/cell";
 import { Graphics } from "./core/graphics";
 import { Direction, InputController, InputStateView, MouseButtonEvent } from "./core/input";
-import { MousePos, Pos } from "./core/utils";
+import { Pos } from "./core/utils";
 import { WorldState } from "./world";
 
 export enum GameModeType {

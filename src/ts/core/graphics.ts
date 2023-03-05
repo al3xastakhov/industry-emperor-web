@@ -1,6 +1,7 @@
 import { WorldState } from "../world";
 import { Cell, CellPos, CellType } from "./cell";
-import { MousePos, Pos } from "./utils";
+import { MousePos } from "./input";
+import { Pos } from "./utils";
 
 export class Camera {
     static readonly scaleDelta = 0.006;
@@ -29,15 +30,18 @@ export class Camera {
 }
 
 export class Graphics {
-    // TODO: move this out to separate Texture class
     static readonly	_tileWidth = 128;
 	static readonly	_tileHeight = 64;
+
+    // TODO: move this out to separate Texture class
 	static readonly	_textureWidth = 12;
 	static readonly	_textureHeight = 6;
 
     public texture: HTMLImageElement;
-    public tileWidth: number;
-    public tileHeight: number;
+
+    // cell[][] rendering settings
+    private tileWidth: number;
+    private tileHeight: number;
 
     public canvas: HTMLCanvasElement;
     public ctx: CanvasRenderingContext2D;
@@ -113,10 +117,19 @@ export class Graphics {
         this.ctx.save();
         this.ctx.globalAlpha = opacity;
         this.ctx.translate((y - x) * this.tileWidth / 2 - this.viewCenter.x, (x + y) * this.tileHeight / 2 - this.viewCenter.y);
+
+        // static readonly	_tileWidth = 128;
+        // static readonly	_tileHeight = 64;
+
         j *= 130;
         i *= 230;
-        // TODO: wtf are these numbers ._.
         // TODO: get rid of direct texture ref here
+
+        // drawImage(image, dx, dy)
+        // drawImage(image, dx, dy, dWidth, dHeight)
+        // drawImage(image, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight)
+        // s - source canvas offset & size
+        // d - destination
         this.ctx.drawImage(this.texture, j, i, 130, 230, -65, -130, 130, 230);
         this.ctx.globalAlpha = 1;
         this.ctx.restore();

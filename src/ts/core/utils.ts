@@ -7,6 +7,10 @@ export abstract class Pos {
 		this.x = x;
 		this.y = y;
 	}
+
+	public toString(): string {
+		return `{x: ${this.x}, y: ${this.y}}`;
+	}
 }
 
 export namespace Pos {
@@ -22,8 +26,6 @@ export namespace Pos {
 		return [p.x, p.y];
 	}
 }
-
-export class MousePos extends Pos { }
 
 // TODO: get rid of this !
 
