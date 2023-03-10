@@ -1,6 +1,5 @@
-import { Graphics } from "./graphics";
 import { Texture } from "./texture";
-import { Pos } from "./utils";
+import { Dimensions, Pos } from "./utils";
 
 // TODO: should not be a part of "core/cell"
 export enum CellType {
@@ -15,6 +14,7 @@ export enum CellType {
 
 export class CellPos extends Pos { }
 
+export class CellDimensions extends Dimensions {}
 
 /**
     === Cell rendering ===

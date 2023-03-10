@@ -4,17 +4,22 @@ import { MousePos } from "./input";
 import { Pos } from "./utils";
 
 export class Camera {
-    static readonly scaleDelta = 0.006;
+    public readonly scaleDelta: number;
 
+    // TODO: expose more fields to settings
     public scale: number = 1;
     public viewCenter: Pos = { x: -650, y: -50 };
 
+    constructor(scaleDelta: number) {
+        this.scaleDelta = scaleDelta;
+    }
+
     public zoomIn() {
-        this.zoom(Camera.scaleDelta);
+        this.zoom(this.scaleDelta);
     }
 
     public zoomOut() {
-        this.zoom(-Camera.scaleDelta);
+        this.zoom(-this.scaleDelta);
     }
 
     private zoom(delta: number) {
@@ -30,23 +35,22 @@ export class Camera {
 }
 
 export class Graphics {
-    static readonly	_tileWidth = 128;
-	static readonly	_tileHeight = 64;
-
     // cell[][] rendering settings
-    private tileWidth: number = Graphics._tileWidth;
-    private tileHeight: number = Graphics._tileHeight;
+    private tileWidth: number;
+    private tileHeight: number;
 
     public canvas: HTMLCanvasElement;
     public ctx: CanvasRenderingContext2D;
 
     public camera: Camera;
 
-    constructor(canvas: HTMLCanvasElement) {
+    constructor(canvas: HTMLCanvasElement, camera: Camera, tileWidth: number, tileHeight: number) {
         this.canvas = canvas;
         this.ctx = this.canvas.getContext("2d");
+        this.tileWidth = tileWidth;
+        this.tileHeight = tileHeight;
 
-        this.camera = new Camera();
+        this.camera = camera;
     }
 
     get scale(): number {

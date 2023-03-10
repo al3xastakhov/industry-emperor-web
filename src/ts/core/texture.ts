@@ -1,4 +1,4 @@
-import { loadImageBitmap, Pos } from "./utils";
+import { Dimensions, Pos, PxDimensions } from "./utils";
 
 export class Texture {
     public readonly img: ImageBitmap;
@@ -14,7 +14,7 @@ export class Texture {
 export class TexturePos extends Pos { }
 
 /**
- * Holds multiple textures within
+ * Holds multiple textures within single image source
  */
 export class TexturePack {
     private image: ImageBitmap;
@@ -25,8 +25,9 @@ export class TexturePack {
     public readonly textureCols: number;
 
     // size of a single texture
-    public readonly textureHeightPx: number;
-    public readonly textureWidthPx: number;
+    public readonly textureDimensionsPx: Dimensions;
+
+    private loaded = false;
 
     private textureCache = {};
 
@@ -34,12 +35,14 @@ export class TexturePack {
         this.src = src;
         this.textureCols = textureCols;
         this.textureRows = textureRows;
-        this.textureHeightPx = textureHeightPx;
-        this.textureWidthPx = textureWidthPx;
+        this.textureDimensionsPx = new PxDimensions(textureWidthPx, textureHeightPx);
     }
 
-    public async load(): Promise<void> {
-        this.image = await loadImageBitmap(this.src);
+    public async load(): Promise<TexturePack> {
+        if (this.loaded) return Promise.resolve(this);
+        this.image = await this.loadImageBitmap(this.src);
+        this.loaded = true;
+        return this;
     }
 
     public async get(pos: TexturePos): Promise<Texture> {
@@ -48,10 +51,10 @@ export class TexturePack {
 
         const img = await createImageBitmap(
             this.image,
-            pos.x * this.textureWidthPx,
-            pos.y * this.textureHeightPx,
-            this.textureWidthPx,
-            this.textureHeightPx
+            pos.x * this.textureDimensionsPx.width,
+            pos.y * this.textureDimensionsPx.height,
+            this.textureDimensionsPx.width,
+            this.textureDimensionsPx.height
         );
 
         this.textureCache[strPos] = new Texture(img);
@@ -59,4 +62,47 @@ export class TexturePack {
         return this.textureCache[strPos];
     }
 
+    public async getAll<K>(inputMap: Map<K, TexturePos[]>): Promise<Map<K, Texture[]>> {
+        await this.load();
+
+        let promises: Promise<[K, Texture[]]>[] = [];
+        inputMap.forEach((positions, key) => {
+            promises.push(
+                Promise.all(positions.map(pos => this.get(pos)))
+                    .then(txts => [key, txts])
+            );
+        });
+
+        const map = new Map<K, Texture[]>();
+        const all: [K, Texture[]][] = await Promise.all(promises);
+
+        all.forEach((kv: [K, Texture[]]) => {
+            map.set(kv[0], kv[1]);
+        });
+
+        return map;
+    }
+
+    private loadImageBitmap(url: string): Promise<ImageBitmap> {
+        return new Promise((resolve, reject) => {
+            const xhr = new XMLHttpRequest();
+            xhr.open("GET", url, true);
+            xhr.responseType = "blob";
+            xhr.onload = function () {
+                if (xhr.status === 200) {
+                    const blob = xhr.response;
+                    createImageBitmap(blob).then((imageBitmap) => {
+                        resolve(imageBitmap);
+                    });
+                } else {
+                    reject(new Error("Failed to load image from URL " + url));
+                }
+            };
+            xhr.onerror = function () {
+                reject(new Error("Failed to load image from URL " + url));
+            };
+            xhr.send();
+        });
+    }
 }
+

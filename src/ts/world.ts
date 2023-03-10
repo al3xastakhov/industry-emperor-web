@@ -1,5 +1,5 @@
-import { Cell, CellPos, CellType } from "./core/cell";
-import { Pos } from "./core/utils";
+import { Cell, CellDimensions, CellPos, CellType } from "./core/cell";
+import { Dimensions, Pos } from "./core/utils";
 
 export class World {
 
@@ -18,6 +18,16 @@ export class World {
     getCell(pos: CellPos): Cell {
         if (!this.isValid(pos)) throw new Error(`Position not valid: ${JSON.stringify(pos)}`);
         return this.cells[pos.x][pos.y];
+    }
+
+    getCellsAt(pos: CellPos, dimensions: CellDimensions): Cell[] {
+        let result = [];
+        for (let x = pos.x; x < pos.x + dimensions.width; x++) {
+            for (let y = pos.y; y < pos.y + dimensions.height; y++) {
+                result.push(this.getCell({ x, y }));
+            }
+        }
+        return result;
     }
 
     setCell(cell: Cell) {

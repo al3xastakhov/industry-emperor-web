@@ -1,8 +1,6 @@
+import { Cell, CellPos, RenderOptions } from "./core/cell";
 import { BuildModeData, GameInput, GameModeType, GameOutput } from "./game_controller";
-import { Pos } from "./core/utils";
 import { World, WorldState } from "./world";
-import { CellPos, Cell, CellType, RenderOptions } from "./core/cell";
-import { TexturePack } from "./core/texture";
 
 export class Game {
 

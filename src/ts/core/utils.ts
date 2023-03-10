@@ -1,4 +1,3 @@
-// TODO: move it somewhere
 export abstract class Pos {
 	public x: number;
 	public y: number;
@@ -12,6 +11,23 @@ export abstract class Pos {
 		return `{x: ${this.x}, y: ${this.y}}`;
 	}
 }
+
+export abstract class Dimensions {
+	public width: number;
+	public height: number;
+
+	constructor(width: number, height: number) {
+		this.width = width;
+		this.height = height;
+	}
+
+	public toString(): string {
+		return `{width: ${this.width}, height: ${this.height}}`;
+	}
+}
+
+/** On-screen pixel dimensions */
+export class PxDimensions extends Dimensions { }
 
 export namespace Pos {
 	export function swap(p: Pos): Pos {
@@ -27,31 +43,7 @@ export namespace Pos {
 	}
 }
 
-export function loadImageBitmap(url: string): Promise<ImageBitmap> {
-	return new Promise((resolve, reject) => {
-		const xhr = new XMLHttpRequest();
-		xhr.open("GET", url, true);
-		xhr.responseType = "blob";
-		xhr.onload = function () {
-			if (xhr.status === 200) {
-				const blob = xhr.response;
-				createImageBitmap(blob).then((imageBitmap) => {
-					resolve(imageBitmap);
-				});
-			} else {
-				reject(new Error("Failed to load image from URL " + url));
-			}
-		};
-		xhr.onerror = function () {
-			reject(new Error("Failed to load image from URL " + url));
-		};
-		xhr.send();
-	});
-}
-
 // TODO: get rid of this !
-
-// From https://stackoverflow.com/a/36046727
 const ToBase64 = u8 => {
 	return btoa(String.fromCharCode.apply(null, u8))
 }
