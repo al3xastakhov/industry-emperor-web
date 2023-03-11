@@ -1,6 +1,7 @@
 import { Cell, CellPos } from "./core/cell";
 import { Graphics } from "./core/graphics";
 import { Direction, InputController, InputStateView, MouseButtonEvent } from "./core/input";
+import { BuildingTemplate } from "./entities/building";
 import { WorldState } from "./world";
 
 export enum GameModeType {
@@ -8,8 +9,10 @@ export enum GameModeType {
 }
 
 export interface BuildModeData {
-    cell: Cell
+    template: BuildingTemplate
 }
+
+export type GameModeData = BuildModeData;
 
 export class GameInput {
     public readonly oldWorldState: WorldState;
@@ -17,7 +20,7 @@ export class GameInput {
 
     // TODO: combine
     public readonly mode: GameModeType;
-    public readonly gameModeData: {} | BuildModeData;
+    public readonly gameModeData: {} | GameModeData;
 }
 
 export class GameOutput {
@@ -69,7 +72,7 @@ export class GameController {
     private oldWorldState: WorldState;
 
     private gameMode: GameModeType;
-    private gameModeData?: BuildModeData;
+    private gameModeData?: GameModeData;
 
     // required for camera moves
     private pressedKeys: Set<string> = new Set();
@@ -77,9 +80,9 @@ export class GameController {
     constructor(graphics: Graphics, inputController: InputController) {
         this.graphics = graphics;
         this.inputController = inputController;
-        this.gameMode = GameModeType.BUILD;
+        this.gameMode = GameModeType.INSPECT;
         // TODO: fix
-        this.setGameModeData({cell: null});
+        // this.setGameModeData({cell: null});
         this.oldWorldState = WorldState.EMPTY;
     }
 
@@ -87,7 +90,7 @@ export class GameController {
         this.gameMode = m;
     }
 
-    public setGameModeData(d: BuildModeData) {
+    public setGameModeData(d: GameModeData) {
         this.gameModeData = d;
     }
 
@@ -106,9 +109,9 @@ export class GameController {
             mode: this.gameMode,
             gameModeData: this.gameModeData,
             playerInput: {
-                cellPos: this.graphics.getTilePosition(rawInput.mousePos),
+                cellPos: this.graphics.getCellPosition(rawInput.mousePos),
                 buttonEvents: rawInput.buttonEvents
-                    .map(e => new CellMouseButtonEvent(e, this.graphics.getTilePosition(e.mousePos))),
+                    .map(e => new CellMouseButtonEvent(e, this.graphics.getCellPosition(e.mousePos))),
             },
         };
     }

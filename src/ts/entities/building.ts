@@ -1,6 +1,5 @@
 import { Cell, CellDimensions, CellPos, CellType } from "../core/cell";
 import { Texture } from "../core/texture";
-import { Dimensions } from "../core/utils";
 import { World } from "../world";
 
 

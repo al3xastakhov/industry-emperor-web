@@ -1,4 +1,4 @@
-import { Pos } from "./utils";
+import { Pos } from "./units";
 
 export class MousePos extends Pos { }
 

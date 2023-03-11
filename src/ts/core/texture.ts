@@ -1,10 +1,21 @@
-import { Dimensions, Pos, PxDimensions } from "./utils";
+import { Dimensions, Pos, ScreenDimensions } from "./units";
 
 export class Texture {
     public readonly img: ImageBitmap;
 
     constructor(img: ImageBitmap) {
         this.img = img
+    }
+
+    public toBlob(): Promise<Blob> {
+        return new Promise((resolve, reject) => {
+            const canvas = document.createElement("canvas");
+            canvas.width = this.img.width;
+            canvas.height = this.img.height;
+            const ctx = canvas.getContext("2d");
+            ctx.drawImage(this.img, 0, 0);
+            return canvas.toBlob(resolve, "image/png");
+        });
     }
 }
 
@@ -35,7 +46,7 @@ export class TexturePack {
         this.src = src;
         this.textureCols = textureCols;
         this.textureRows = textureRows;
-        this.textureDimensionsPx = new PxDimensions(textureWidthPx, textureHeightPx);
+        this.textureDimensionsPx = new ScreenDimensions(textureWidthPx, textureHeightPx);
     }
 
     public async load(): Promise<TexturePack> {

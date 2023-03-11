@@ -1,9 +1,11 @@
 import { Texture } from "./texture";
-import { Dimensions, Pos } from "./utils";
+import { Dimensions, Pos } from "./units";
 
-// TODO: should not be a part of "core/cell"
 export enum CellType {
     Empty = "Empty",
+    Occupied = "Occupied",
+    
+    // TODO: game logic should not be a part of "core/cell"
     ResidentialBuilding = "ResidentialBuilding",
     Road = "Road",
     Factory = "Factory",

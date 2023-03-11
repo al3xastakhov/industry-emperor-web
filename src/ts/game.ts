@@ -56,15 +56,16 @@ export class Game {
     }
 
     private handleClick_Build(input: GameInput, cellPos: CellPos) {
-        // TODO: fixme
+        const data = input.gameModeData as BuildModeData;
+        data.template.place(this.world, cellPos);
 
-        const tool = (input.gameModeData as BuildModeData).cell;
-        this.world.setCell(new Cell(
-            tool.texture,
-            cellPos,
-            tool.type,
-            new RenderOptions(true)
-        ));
+        // const tool = (input.gameModeData as BuildModeData).cell;
+        // this.world.setCell(new Cell(
+        //     tool.texture,
+        //     cellPos,
+        //     tool.type,
+        //     new RenderOptions(true)
+        // ));
     }
 
     private handleClick_Inspect(cellPos: CellPos, output: GameOutput) {

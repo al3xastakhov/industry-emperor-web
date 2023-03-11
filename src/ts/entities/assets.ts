@@ -5,9 +5,9 @@ export class Textures {
     private static texturePos: Map<string, TexturePos[]> = new Map([
         [BuildingType.Empty, [new TexturePos(0, 0)]],
         [BuildingType.Storage, [new TexturePos(11, 3), new TexturePos(11, 5)]],
+        [BuildingType.Factory, [new TexturePos(4, 5), new TexturePos(5, 5), new TexturePos(8, 5)]],
 
         // TODO: map more stuff !
-        [BuildingType.Factory, [new TexturePos(0, 1)]],
         [BuildingType.ResidentialBuilding, [new TexturePos(0, 1)]],
         [BuildingType.Road, [new TexturePos(0, 1)]],
         [BuildingType.Shop, [new TexturePos(0, 1)]],

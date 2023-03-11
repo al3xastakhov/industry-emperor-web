@@ -1,5 +1,5 @@
 import { Cell, CellDimensions, CellPos, CellType } from "./core/cell";
-import { Dimensions, Pos } from "./core/utils";
+import { Dimensions, Pos } from "./core/units";
 
 export class World {
 

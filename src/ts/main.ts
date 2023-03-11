@@ -1,15 +1,15 @@
-import { BuildingTemplate, BuildingType } from "./entities/building";
-import { Cell, CellDimensions, CellPos, CellType, RenderOptions } from "./core/cell";
+import { Cell, CellPos, CellType, RenderOptions } from "./core/cell";
 import { Camera, Graphics } from "./core/graphics";
 import { InputController } from "./core/input";
-import { Texture, TexturePack, TexturePos } from "./core/texture";
-import { Dimensions, loadHashState } from "./core/utils";
+import { TexturePack, TexturePos } from "./core/texture";
+import { loadHashState } from "./core/utils";
+import { Textures } from "./entities/assets";
 import { Game } from "./game";
 import { GameController, GameModeType } from "./game_controller";
-import { UI } from "./ui";
+import { CoreSettings, GameSettings } from "./settings";
+import { BuildingTemplates } from "./ui/building_templates";
+import { UI } from "./ui/ui";
 import { World } from "./world";
-import { Textures } from "./entities/assets";
-import { CoreSettings } from "./settings";
 
 const $ = _ => document.querySelector(_)
 
@@ -31,7 +31,7 @@ texturePack.load()
 	.then(_ => main());
 
 async function main() {
-	const size = 20;
+	const size = GameSettings.World.size;
 	let map = MapLoader.loadMap(size);
 	let world = await MapLoader.fromTextureArray(map);
 	game = new Game(world);
@@ -39,11 +39,11 @@ async function main() {
 	drawingContainer = $("#drawing-container");
 	canvas = $("#bg");
 
-	ui = new UI();
 	let camera = new Camera(CoreSettings.Camera.scaleDelta);
 	graphics = new Graphics(canvas, camera, CoreSettings.Graphics.tileWidth, CoreSettings.Graphics.tileHeight);
 	let inputController = new InputController();
 	gameController = new GameController(graphics, inputController);
+	ui = new UI(gameController);
 
 	onResize();
 
@@ -66,14 +66,10 @@ async function main() {
 		frameCount = 0;
 	}, 1000);
 
-	let storageTemplate = new BuildingTemplate(
-		BuildingType.Storage,
-		Textures.get(BuildingType.Storage)[0],
-		new CellDimensions(2, 2),
-	);
+	let building = BuildingTemplates.storageTemplate.place(world, new CellPos(0, 0));
+	BuildingTemplates.factoryTemplate.place(world, new CellPos(0, 4));
 
-	let building = storageTemplate.place(world, new CellPos(0, 0));
-
+	ui.buildTab.render();
 	ToolsUi.renderTools(texturePack.textureRows, texturePack.textureCols);
 
 	// debug object, available in console
@@ -167,6 +163,7 @@ namespace ToolsUi {
 
 		switch (selector) {
 			case "#tools":
+			case "#tools2":
 				gameController.setGameMode(GameModeType.BUILD);
 				break;
 			case "#details":
@@ -186,15 +183,9 @@ namespace ToolsUi {
 				div.style.display = "block";
 				/* width of 132 instead of 130  = 130 image + 2 border = 132 */
 				div.style.backgroundPosition = `-${j * texturePack.textureDimensionsPx.width + 2}px -${i * texturePack.textureDimensionsPx.height}px`;
+				div.title = MapLoader.cellTypeFromNumber([i, j], texturePack.textureCols);
 				div.addEventListener('click', async (_: MouseEvent) => {
-					const txt = await texturePack.get(new TexturePos(j, i));
-					gameController.setGameMode(GameModeType.BUILD);
-					gameController.setGameModeData({
-						cell: new Cell(txt,
-							new CellPos(0, 0),  // should be ignored
-							MapLoader.cellTypeFromNumber([i, j], texturePack.textureCols),
-							new RenderOptions(true)),  // should be ignored
-					});
+					console.log(div.title);
 				});
 				tools.appendChild(div);
 			}

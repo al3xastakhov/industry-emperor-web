@@ -19,6 +19,10 @@ p.ui {
 	padding: 20px 0;
 }
 
+#tool2 {
+	display: flex;
+}
+
 #tools {
 	display: flex;
 	flex-wrap: wrap;

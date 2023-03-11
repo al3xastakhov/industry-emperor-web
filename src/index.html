@@ -29,11 +29,13 @@
 			<div class="col-sm-3" style="border: 1px solid #ddd; background-color: #eee;">
 				<div id="controls">
 					<div id="btns">
-						<button class="btn btn-dark" data-tab="#tools" onclick="activateTab(this)">Build Mode 🏠</button>
-						<button class="btn btn-outline-dark" data-tab="#details" onclick="activateTab(this)">Inspect Mode ℹ️</button>
+						<button class="btn btn-outline-dark" data-tab="#tools2" onclick="activateTab(this)">Build Mode 🏠</button>
+						<button class="btn btn-dark" data-tab="#tools" onclick="activateTab(this)">Build Mode (legacy)</button>
+						<button class="btn btn-dark" data-tab="#details" onclick="activateTab(this)">Inspect Mode ℹ️</button>
 					</div>
 					<div id="instruments" class="h100">
-						<div id="tools" class="instrument-panel"></div>
+						<div id="tools2" class="instrument-panel"></div>
+						<div id="tools" class="instrument-panel" style="display: none !important;"></div>
 						<div id="details" class="instrument-panel" style="display: none !important;">
 							<p>Pick cell to inspect</p>
 						</div>

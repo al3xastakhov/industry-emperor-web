@@ -14,3 +14,12 @@ export namespace CoreSettings {
         public static readonly scaleDelta = 0.006;
     }
 }
+
+/**
+ * Settings that influence game logic
+ */
+export namespace GameSettings {
+    export class World {
+        public static readonly size = 20;
+    }
+}
