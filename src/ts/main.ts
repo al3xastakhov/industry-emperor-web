@@ -73,7 +73,7 @@ async function main() {
 	ToolsUi.renderTools(texturePack.textureRows, texturePack.textureCols);
 
 	// debug object, available in console
-	let dbg = { ui, graphics, world, gameController, game, building, assets: {Textures} };
+	let dbg = { ui, graphics, world, gameController, game, building, assets: { Textures } };
 	window["dbg"] = dbg;
 }
 
@@ -185,7 +185,14 @@ namespace ToolsUi {
 				div.style.backgroundPosition = `-${j * texturePack.textureDimensionsPx.width + 2}px -${i * texturePack.textureDimensionsPx.height}px`;
 				div.title = MapLoader.cellTypeFromNumber([i, j], texturePack.textureCols);
 				div.addEventListener('click', async (_: MouseEvent) => {
-					console.log(div.title);
+					const txt = await texturePack.get(new TexturePos(j, i));
+					gameController.setGameMode(GameModeType.BUILD_LEGACY);
+					gameController.setGameModeData({
+						cell: new Cell(txt,
+							new CellPos(0, 0),  // should be ignored
+							MapLoader.cellTypeFromNumber([i, j], texturePack.textureCols),
+							new RenderOptions(true)),  // should be ignored
+					});
 				});
 				tools.appendChild(div);
 			}

@@ -1,5 +1,5 @@
 import { Cell, CellPos, RenderOptions } from "./core/cell";
-import { BuildModeData, GameInput, GameModeType, GameOutput } from "./game_controller";
+import { BuildModeData, BuildModeData_Legacy, GameInput, GameModeType, GameOutput } from "./game_controller";
 import { World, WorldState } from "./world";
 
 export class Game {
@@ -48,6 +48,9 @@ export class Game {
                 case GameModeType.BUILD:
                     this.handleClick_Build(input, cellPos);
                     break;
+                case GameModeType.BUILD_LEGACY:
+                    this.handleClick_BuildLegacy(input, cellPos);
+                    break;
                 case GameModeType.INSPECT:
                     this.handleClick_Inspect(cellPos, output);
                     break;
@@ -58,14 +61,16 @@ export class Game {
     private handleClick_Build(input: GameInput, cellPos: CellPos) {
         const data = input.gameModeData as BuildModeData;
         data.template.place(this.world, cellPos);
+    }
 
-        // const tool = (input.gameModeData as BuildModeData).cell;
-        // this.world.setCell(new Cell(
-        //     tool.texture,
-        //     cellPos,
-        //     tool.type,
-        //     new RenderOptions(true)
-        // ));
+    private handleClick_BuildLegacy(input: GameInput, cellPos: CellPos) {
+        const tool = (input.gameModeData as BuildModeData_Legacy).cell;
+        this.world.setCell(new Cell(
+            tool.texture,
+            cellPos,
+            tool.type,
+            new RenderOptions(true)
+        ));
     }
 
     private handleClick_Inspect(cellPos: CellPos, output: GameOutput) {

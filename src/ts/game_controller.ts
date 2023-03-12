@@ -5,14 +5,18 @@ import { BuildingTemplate } from "./entities/building";
 import { WorldState } from "./world";
 
 export enum GameModeType {
-    IDLE, BUILD, INSPECT
+    IDLE, BUILD, BUILD_LEGACY, INSPECT
 }
 
 export interface BuildModeData {
     template: BuildingTemplate
 }
 
-export type GameModeData = BuildModeData;
+export interface BuildModeData_Legacy {
+    cell: Cell
+}
+
+export type GameModeData = BuildModeData | BuildModeData_Legacy;
 
 export class GameInput {
     public readonly oldWorldState: WorldState;
